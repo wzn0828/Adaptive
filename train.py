@@ -98,13 +98,13 @@ def main(args):
 
             # Decay the learning rate
             learning_rate = args.learning_rate * decay_factor
-        
-        print 'Learning Rate for Epoch %d: %.6f'%( epoch, learning_rate )
+
+        print('Learning Rate for Epoch %d: %.6f' % (epoch, learning_rate))
 
         optimizer = torch.optim.Adam( params, lr=learning_rate, betas=( args.alpha, args.beta ) )
 
         # Language Modeling Training
-        print '------------------Training for Epoch %d----------------'%( epoch )
+        print('------------------Training for Epoch %d----------------' % (epoch))
         for i, (images, captions, lengths, _, _ ) in enumerate( data_loader ):
 
             # Set mini-batch dataset
@@ -136,13 +136,14 @@ def main(args):
 
             # Print log info
             if i % args.log_step == 0:
-                print 'Epoch [%d/%d], Step [%d/%d], CrossEntropy Loss: %.4f, Perplexity: %5.4f'%( epoch, 
-                                                                                                 args.num_epochs, 
-                                                                                                 i, total_step, 
-                                                                                                 loss.data[0],
-                                                                                                 np.exp( loss.data[0] ) )  
-                
-        # Save the Adaptive Attention model after each epoch
+                print('Epoch [%d/%d], Step [%d/%d], CrossEntropy Loss: %.4f, Perplexity: %5.4f' % (epoch,
+                                                                                                   args.num_epochs,
+                                                                                                   i, total_step,
+                                                                                                   loss.data[0],
+                                                                                                   np.exp(
+                                                                                                       loss.data[0])))
+
+                # Save the Adaptive Attention model after each epoch
         torch.save( adaptive.state_dict(), 
                     os.path.join( args.model_path, 
                     'adaptive-%d.pkl'%( epoch ) ) )          
@@ -164,8 +165,8 @@ def main(args):
             # Test if there is improvement, if not do early stopping
             if last_6_max != best_cider:
                 
-                print 'No improvement with CIDEr in the last 6 epochs...Early stopping triggered.'
-                print 'Model of best epoch #: %d with CIDEr score %.2f'%( best_epoch, best_cider )
+                print('No improvement with CIDEr in the last 6 epochs...Early stopping triggered.')
+                print('Model of best epoch #: %d with CIDEr score %.2f' % (best_epoch, best_cider))
                 break
             
             
@@ -230,8 +231,8 @@ if __name__ == '__main__':
                          help='decay learning rate at every this number')
     
     args = parser.parse_args()
-    
-    print '------------------------Model and Training Details--------------------------'
+
+    print('------------------------Model and Training Details--------------------------')
     print(args)
     
     # Start training
