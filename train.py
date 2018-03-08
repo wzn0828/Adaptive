@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+os.environ['CUDA_VISIBLE_DEVICES'] = '3'
 import pickle
 from utils import coco_eval, to_var
 from data_loader import get_loader

@@ -13,8 +13,8 @@ class AttentiveCNN(nn.Module):
         super(AttentiveCNN, self).__init__()
         
         # ResNet-152 backend
-        resnet = models.resnet152( pretrained=True)
-        modules = list( resnet.children())[ :-2 ] # delete the last fc layer and avg pool.
+        resnet = models.resnet152(pretrained=True)
+        modules = list( resnet.children())[:-2] # delete the last fc layer and avg pool.
         resnet_conv = nn.Sequential( *modules ) # last conv feature
         
         self.resnet_conv = resnet_conv
