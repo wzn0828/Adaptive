@@ -13,13 +13,13 @@ class Vocabulary(object):
         self.idx = 0
 
     def add_word(self, word):
-        if not word in self.word2idx:
+        if word not in self.word2idx:
             self.word2idx[word] = self.idx
             self.idx2word[self.idx] = word
             self.idx += 1
 
     def __call__(self, word):
-        if not word in self.word2idx:
+        if word not in self.word2idx:
             return self.word2idx['<unk>']
         return self.word2idx[word]
 
@@ -60,8 +60,8 @@ def main(args):
     vocab_path = args.vocab_path
     with open(vocab_path, 'wb') as f:
         pickle.dump(vocab, f)
-    print("Total vocabulary size: %d" %len(vocab))
-    print("Saved the vocabulary wrapper to '%s'" %vocab_path)
+    print("Total vocabulary size: %d" % len(vocab))
+    print("Saved the vocabulary wrapper to '%s'" % vocab_path)
 
 
 if __name__ == '__main__':
