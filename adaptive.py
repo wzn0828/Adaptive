@@ -8,13 +8,13 @@ from torch.nn import init
 
 
 #========================================Knowing When to Look========================================
-class AttentiveCNN( nn.Module ):
+class AttentiveCNN(nn.Module):
     def __init__( self, embed_size, hidden_size ):
-        super( AttentiveCNN, self ).__init__()
+        super(AttentiveCNN, self).__init__()
         
         # ResNet-152 backend
-        resnet = models.resnet152( pretrained=True )
-        modules = list( resnet.children() )[ :-2 ] # delete the last fc layer and avg pool.
+        resnet = models.resnet152( pretrained=True)
+        modules = list( resnet.children())[ :-2 ] # delete the last fc layer and avg pool.
         resnet_conv = nn.Sequential( *modules ) # last conv feature
         
         self.resnet_conv = resnet_conv
@@ -268,13 +268,13 @@ class Decoder( nn.Module ):
         
 
 # Whole Architecture with Image Encoder and Caption decoder        
-class Encoder2Decoder( nn.Module ):
-    def __init__( self, embed_size, vocab_size, hidden_size ):
-        super( Encoder2Decoder, self ).__init__()
+class Encoder2Decoder(nn.Module):
+    def __init__(self, embed_size, vocab_size, hidden_size):
+        super(Encoder2Decoder, self).__init__()
         
         # Image CNN encoder and Adaptive Attention Decoder
-        self.encoder = AttentiveCNN( embed_size, hidden_size )
-        self.decoder = Decoder( embed_size, vocab_size, hidden_size )
+        self.encoder = AttentiveCNN(embed_size, hidden_size)
+        self.decoder = Decoder(embed_size, vocab_size, hidden_size)
         
         
     def forward( self, images, captions, lengths ):
