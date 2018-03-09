@@ -292,6 +292,9 @@ class Encoder2Decoder(nn.Module):
         scores, _, _,_ = self.decoder( V, v_g, captions )
         
         # Pack it to make criterion calculation more efficient
+        # lengths = Variable.tolist(lengths)   # by wzn, new added
+        # lengths = lengths.data.cpu().numpy().tolist()
+        # lengths = torch.cuda.FloatTensor.tolist(lengths)  # by wzn, new added
         packed_scores = pack_padded_sequence( scores, lengths, batch_first=True )
         
         return packed_scores
