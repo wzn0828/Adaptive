@@ -53,7 +53,8 @@ def main(args):
         adaptive.load_state_dict(torch.load(args.pretrained))
         # Get starting epoch #, note that model is named as '...your path to model/algoname-epoch#.pkl'
         # A little messy here.
-        start_epoch = int(args.pretrained.split('/')[-1].split('-')[1].split('.')[0]) + 1
+        # start_epoch = int(args.pretrained.split('/')[-1].split('-')[1].split('.')[0]) + 1
+        start_epoch = int(args.pretrained.split('/')[-1].split('-')[1].split('.')[0])
 
     else:
         start_epoch = 1
@@ -106,49 +107,50 @@ def main(args):
 
         # Language Modeling Training
         print('------------------Training for Epoch %d----------------' % (epoch))
-        for i, (images, captions, lengths, _, _) in enumerate(data_loader):
+        if epoch != start_epoch:
+            for i, (images, captions, lengths, _, _) in enumerate(data_loader):
 
-            # Set mini-batch dataset
-            images = to_var(images)
-            captions = to_var(captions)
-            lengths = [cap_len - 1 for cap_len in lengths]
-            targets = pack_padded_sequence(captions[:, 1:], lengths, batch_first=True)[0]
+                # Set mini-batch dataset
+                images = to_var(images)
+                captions = to_var(captions)
+                lengths = [cap_len - 1 for cap_len in lengths]
+                targets = pack_padded_sequence(captions[:, 1:], lengths, batch_first=True)[0]
 
-            # Forward, Backward and Optimize
-            adaptive.train()
-            adaptive.zero_grad()
+                # Forward, Backward and Optimize
+                adaptive.train()
+                adaptive.zero_grad()
 
-            # lengths = torch.Tensor(lengths)   # by wzn,new added
-            # lengths = to_var(lengths)         # by wzn,new added
-            packed_scores = adaptive(images, captions, lengths)
+                # lengths = torch.Tensor(lengths)   # by wzn,new added
+                # lengths = to_var(lengths)         # by wzn,new added
+                packed_scores = adaptive(images, captions, lengths)
 
-            # Compute loss and backprop
-            loss = LMcriterion(packed_scores[0], targets)
-            loss.backward()
+                # Compute loss and backprop
+                loss = LMcriterion(packed_scores[0], targets)
+                loss.backward()
 
-            # Gradient clipping for gradient exploding problem in LSTM
-            for p in adaptive.decoder.LSTM.parameters():
-                p.data.clamp_(-args.clip, args.clip)
+                # Gradient clipping for gradient exploding problem in LSTM
+                for p in adaptive.decoder.LSTM.parameters():
+                    p.data.clamp_(-args.clip, args.clip)
 
-            optimizer.step()
+                optimizer.step()
 
-            # Start CNN fine-tuning
-            if epoch > args.cnn_epoch:
-                cnn_optimizer.step()
+                # Start CNN fine-tuning
+                if epoch > args.cnn_epoch:
+                    cnn_optimizer.step()
 
-            # Print log info
-            if i % args.log_step == 0:
-                print('Epoch [%d/%d], Step [%d/%d], CrossEntropy Loss: %.4f, Perplexity: %5.4f' % (epoch,
-                                                                                                   args.num_epochs,
-                                                                                                   i, total_step,
-                                                                                                   loss.data[0],
-                                                                                                   np.exp(
-                                                                                                       loss.data[0]) ))
+                # Print log info
+                if i % args.log_step == 0:
+                    print('Epoch [%d/%d], Step [%d/%d], CrossEntropy Loss: %.4f, Perplexity: %5.4f' % (epoch,
+                                                                                                       args.num_epochs,
+                                                                                                       i, total_step,
+                                                                                                       loss.data[0],
+                                                                                                       np.exp(
+                                                                                                           loss.data[0]) ))
 
-                # Save the Adaptive Attention model after each epoch
-        torch.save(adaptive.state_dict(),
-                   os.path.join(args.model_path,
-                                'adaptive-%d.pkl' % (epoch)))
+                    # Save the Adaptive Attention model after each epoch
+            torch.save(adaptive.state_dict(),
+                       os.path.join(args.model_path,
+                                    'adaptive-%d.pkl' % (epoch)))
 
         # Evaluation on validation set
         cider = coco_eval(adaptive, args, epoch)
@@ -217,7 +219,7 @@ if __name__ == '__main__':
                         help='dimension of lstm hidden states')
 
     # Training details
-    parser.add_argument('--pretrained', type=str, default='', help='start from checkpoint or scratch')
+    parser.add_argument('--pretrained', type=str, default='models/adaptive-1.pkl', help='start from checkpoint or scratch')
     parser.add_argument('--num_epochs', type=int, default=50)
     parser.add_argument('--batch_size', type=int, default=60)  # on cluster setup, 60 each x 4 for Huckle server
 
