@@ -8,7 +8,7 @@ def resize_image(image, size):
     return image.resize(size, Image.ANTIALIAS)
 
 
-def resize_images(image_dir, output_dir, size):
+def resize_folder_images(image_dir, output_dir, size):
     """Resize the images in 'image_dir' and save into 'output_dir'."""
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -26,32 +26,21 @@ def resize_images(image_dir, output_dir, size):
                   % (i, num_images, output_dir))
 
 
-def main(args):
+def resize_images(cf):
     splits = ['train', 'val']
     years = ['2014']
 
-    if not os.path.exists(args.output_dir):
-        os.makedirs(args.output_dir)
+    if not os.path.exists(cf.resized_image_dir):
+        os.makedirs(cf.resized_image_dir)
 
     for split in splits:
         for year in years:
             # build path for input and output dataset
             dataset = split + year
-            image_dir = os.path.join(args.image_dir, dataset)
-            output_dir = os.path.join(args.output_dir, dataset)
+            image_dir = os.path.join(cf.image_dir, dataset)
+            output_dir = os.path.join(cf.resized_image_dir, dataset)
 
-            image_size = [args.image_size, args.image_size]
-            resize_images(image_dir, output_dir, image_size)
+            image_size = [cf.resized_image_size, cf.resized_image_size]
+            resize_folder_images(image_dir, output_dir, image_size)
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--image_dir', type=str, default='/media/samsumg_1tb/Image_Caption/Datasets/MSCOCO',
-                        help='directory for train images')
-    parser.add_argument('--output_dir', type=str, default='/media/samsumg_1tb/Image_Caption/Datasets/MSCOCO/resized',
-                        help='directory for saving resized images')
-
-    parser.add_argument('--image_size', type=int, default=256,  # for cropping purpose
-                        help='size for image after processing')
-    args = parser.parse_args()
-    main(args)
