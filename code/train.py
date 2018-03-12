@@ -40,7 +40,7 @@ def train(cf):
         vocab = pickle.load(f)
 
     # Build training data loader
-    data_loader = get_loader(cf.image_dir, cf.train_anno_path, vocab,
+    data_loader = get_loader(cf.resized_image_dir, cf.train_anno_path, vocab,
                              transform, cf.train_batch_size,
                              shuffle=True, num_workers=cf.num_workers)
 

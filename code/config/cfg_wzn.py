@@ -1,7 +1,8 @@
 #--------------------path--------------------#
 path_experiment             = 'Experiments'
 vocab_path                  = 'code/data/vocab.pkl'   # path for vocabulary wrapper
-image_dir                   = '/media/samsumg_1tb/Image_Caption/Datasets/MSCOCO/resized'   # directory for resized training images
+resized_image_dir           = '/media/samsumg_1tb/Image_Caption/Datasets/MSCOCO/resized'   # directory for resized training images
+image_dir                   = '/media/samsumg_1tb/Image_Caption/Datasets/MSCOCO'
 train_anno_path             = 'code/data/annotations/karpathy_split_train.json'  # path for train annotation json file
 val_anno_path               = 'code/data/annotations/karpathy_split_val.json'    # path for validation annotation json file
 test_anno_path              = 'code/data/annotations/karpathy_split_test.json'   # path for test annotation json file
@@ -35,4 +36,7 @@ lstm_hidden_size            = 512                                       # dimens
 # For eval_size > 30, it will cause cuda OOM error on Huckleberry
 eval_batch_size             = 28                                        # on cluster setup, 30 each x 4
 dataloader_num_workers      = 4
+
+#--------------------resize--------------------#
+resized_image_size          = 256                                       # size for image after processing
 
