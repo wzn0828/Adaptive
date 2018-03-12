@@ -95,11 +95,11 @@ class CocoEvalLoader( datasets.ImageFolder ):
         return img, img_id, filename
 
 # MSCOCO Evaluation function
-def coco_eval( model, args, epoch ):
+def coco_eval( model, cf, epoch ):
     
     '''
     model: trained model to be evaluated
-    args: pre-set parameters
+    cf: pre-set parameters
     epoch: epoch #, for disp purpose
     '''
     
@@ -107,20 +107,20 @@ def coco_eval( model, args, epoch ):
     
     # Validation images are required to be resized to 224x224 already
     transform = transforms.Compose([ 
-        transforms.Scale( (args.crop_size, args.crop_size) ),
+        transforms.Scale((cf.train_crop_size, cf.train_crop_size)),
         transforms.ToTensor(), 
         transforms.Normalize((0.485, 0.456, 0.406), 
                              (0.229, 0.224, 0.225))])
     
     # Load the vocabulary
-    with open( args.vocab_path, 'rb' ) as f:
+    with open( cf.vocab_path, 'rb' ) as f:
          vocab = pickle.load( f )
     
     # Wrapper the COCO VAL dataset
     eval_data_loader = torch.utils.data.DataLoader( 
-        CocoEvalLoader( args.image_dir, args.caption_val_path, transform ), 
-        batch_size = args.eval_size, 
-        shuffle = False, num_workers = args.num_workers,
+        CocoEvalLoader(cf.resized_image_dir, cf.val_anno_path, transform),
+        batch_size = cf.eval_batch_size,
+        shuffle = False, num_workers = cf.dataloader_num_workers,
         drop_last = False )  
     
     # Generated captions to be compared with GT
@@ -165,7 +165,7 @@ def coco_eval( model, args, epoch ):
     resFile = 'results/mixed-' + str( epoch ) + '.json'
     json.dump( results, open( resFile , 'w' ) )
     
-    annFile = args.caption_val_path
+    annFile = cf.val_anno_path
     coco = COCO( annFile )
     cocoRes = coco.loadRes( resFile )
     
