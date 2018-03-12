@@ -221,7 +221,7 @@ if __name__ == '__main__':
     # Training details
     parser.add_argument('--pretrained', type=str, default='models/adaptive-1.pkl', help='start from checkpoint or scratch')
     parser.add_argument('--num_epochs', type=int, default=50)
-    parser.add_argument('--batch_size', type=int, default=60)  # on cluster setup, 60 each x 4 for Huckle server
+    parser.add_argument('--batch_size', type=int, default=70)  # on cluster setup, 60 each x 4 for Huckle server
 
     # For eval_size > 30, it will cause cuda OOM error on Huckleberry
     parser.add_argument('--eval_size', type=int, default=28)  # on cluster setup, 30 each x 4

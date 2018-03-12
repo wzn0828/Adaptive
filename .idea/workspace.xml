@@ -2,10 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="4a8d3c54-1f4e-400b-9f00-4caa5cfd3856" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build_vocab.py" afterPath="$PROJECT_DIR$/build_vocab.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/coco/PythonAPI/pycocotools/coco.py" afterPath="$PROJECT_DIR$/coco/PythonAPI/pycocotools/coco.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data_loader.py" afterPath="$PROJECT_DIR$/data_loader.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/utils.py" afterPath="$PROJECT_DIR$/utils.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/train.py" afterPath="$PROJECT_DIR$/train.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -16,26 +14,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="README.md" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/README.md">
-          <provider selected="true" editor-type-id="split-provider[text-editor;MarkdownPreviewEditor]">
-            <state split_layout="SECOND">
-              <first_editor relative-caret-position="257">
-                <caret line="22" column="21" lean-forward="false" selection-start-line="22" selection-start-column="21" selection-end-line="22" selection-end-column="21" />
-                <folding />
-              </first_editor>
-              <second_editor>
-                <js_state />
-              </second_editor>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="train.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="train.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/train.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="68">
-              <caret line="10" column="23" lean-forward="false" selection-start-line="10" selection-start-column="23" selection-end-line="10" selection-end-column="23" />
+            <state relative-caret-position="314">
+              <caret line="223" column="61" lean-forward="false" selection-start-line="223" selection-start-column="61" selection-end-line="223" selection-end-column="61" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
                 <element signature="e#3907#5846#0" expanded="false" />
@@ -44,31 +27,21 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="coco.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/coco/PythonAPI/pycocotools/coco.py">
+      <file leaf-file-name="result_3_10" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/results/result_3_10">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="126">
-              <caret line="54" column="0" lean-forward="false" selection-start-line="54" selection-start-column="0" selection-end-line="54" selection-end-column="0" />
+            <state relative-caret-position="334">
+              <caret line="13805" column="25" lean-forward="true" selection-start-line="13805" selection-start-column="25" selection-end-line="13805" selection-end-column="25" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="utils.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/utils.py">
+      <file leaf-file-name="adaptive.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/adaptive.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="126">
-              <caret line="7" column="0" lean-forward="false" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="data_loader.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/data_loader.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="143">
-              <caret line="10" column="46" lean-forward="false" selection-start-line="10" selection-start-column="46" selection-end-line="10" selection-end-column="46" />
+            <state relative-caret-position="365">
+              <caret line="267" column="1" lean-forward="true" selection-start-line="267" selection-start-column="1" selection-end-line="267" selection-end-column="1" />
               <folding />
             </state>
           </provider>
@@ -89,6 +62,7 @@
       <find>Compose</find>
       <find>wzn</find>
       <find>pretrained</find>
+      <find>Epoch [12/50]</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -108,7 +82,6 @@
         <option value="$PROJECT_DIR$/coco/pycocoevalcap/bleu/bleu.py" />
         <option value="$PROJECT_DIR$/coco/pycocoevalcap/cider/cider.py" />
         <option value="$PROJECT_DIR$/adaptive.py" />
-        <option value="$PROJECT_DIR$/train.py" />
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/coco/pycocoevalcap/tokenizer/ptbtokenizer.py" />
         <option value="$PROJECT_DIR$/data_loader.py" />
@@ -116,14 +89,16 @@
         <option value="$PROJECT_DIR$/build_vocab.py" />
         <option value="$PROJECT_DIR$/coco/PythonAPI/pycocotools/coco.py" />
         <option value="$PROJECT_DIR$/coco/PythonAPI/pycocotools/mask.py" />
+        <option value="$PROJECT_DIR$/train.py" />
+        <option value="$PROJECT_DIR$/results/result_origin" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="88" />
-    <option name="y" value="25" />
+    <option name="x" value="1907" />
+    <option name="y" value="36" />
     <option name="width" value="1851" />
-    <option name="height" value="882" />
+    <option name="height" value="892" />
   </component>
   <component name="ProjectView">
     <navigator currentView="ProjectPane" proportions="" version="1">
@@ -147,24 +122,6 @@
               <item name="Adaptive" type="b2602c69:ProjectViewProjectNode" />
               <item name="Adaptive" type="462c0819:PsiDirectoryNode" />
             </path>
-            <path>
-              <item name="Adaptive" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Adaptive" type="462c0819:PsiDirectoryNode" />
-              <item name="coco" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Adaptive" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Adaptive" type="462c0819:PsiDirectoryNode" />
-              <item name="coco" type="462c0819:PsiDirectoryNode" />
-              <item name="PythonAPI" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Adaptive" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Adaptive" type="462c0819:PsiDirectoryNode" />
-              <item name="coco" type="462c0819:PsiDirectoryNode" />
-              <item name="PythonAPI" type="462c0819:PsiDirectoryNode" />
-              <item name="pycocotools" type="462c0819:PsiDirectoryNode" />
-            </path>
           </expand>
           <select />
         </subPane>
@@ -175,7 +132,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/coco/pycocotools/coco.py" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../autonomous_driving" />
     <property name="two.files.diff.last.used.file" value="$PROJECT_DIR$/coco/pycocotools/coco.py" />
   </component>
   <component name="RunDashboard">
@@ -278,17 +235,16 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="88" y="25" width="1851" height="882" extended-state="0" />
-    <editor active="true" />
+    <frame x="1907" y="36" width="1851" height="892" extended-state="0" />
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32934928" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="LuaCheck" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32802126" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.118193895" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.6799469" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.20221607" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2778506" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.70252323" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.20221607" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.35856575" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25152355" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
@@ -314,25 +270,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/coco/pycocotools/coco.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3852">
-          <caret line="221" column="26" lean-forward="false" selection-start-line="221" selection-start-column="26" selection-end-line="221" selection-end-column="26" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/train.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="18">
-          <caret line="7" column="12" lean-forward="false" selection-start-line="7" selection-start-column="12" selection-end-line="7" selection-end-column="12" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
-            <element signature="e#3907#5846#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/README.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;MarkdownPreviewEditor]">
         <state split_layout="SECOND">
@@ -392,7 +329,7 @@
         <state relative-caret-position="234">
           <caret line="19" column="13" lean-forward="false" selection-start-line="19" selection-start-column="13" selection-end-line="19" selection-end-column="13" />
           <folding>
-            <element signature="e#0#12#0" expanded="true" />
+            <element signature="e#0#12#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -657,29 +594,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/adaptive.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="244">
-          <caret line="320" column="8" lean-forward="true" selection-start-line="320" selection-start-column="8" selection-end-line="320" selection-end-column="8" />
-          <folding>
-            <element signature="e#0#12#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/README.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;MarkdownPreviewEditor]">
-        <state split_layout="SECOND">
-          <first_editor relative-caret-position="257">
-            <caret line="22" column="21" lean-forward="false" selection-start-line="22" selection-start-column="21" selection-end-line="22" selection-end-column="21" />
-            <folding />
-          </first_editor>
-          <second_editor>
-            <js_state />
-          </second_editor>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/data_loader.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="143">
@@ -720,14 +634,51 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;MarkdownPreviewEditor]">
+        <state split_layout="SECOND">
+          <first_editor relative-caret-position="257">
+            <caret line="22" column="21" lean-forward="false" selection-start-line="22" selection-start-column="21" selection-end-line="22" selection-end-column="21" />
+            <folding />
+          </first_editor>
+          <second_editor>
+            <js_state />
+          </second_editor>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/results/mixed-18.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-216">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/train.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret line="10" column="23" lean-forward="false" selection-start-line="10" selection-start-column="23" selection-end-line="10" selection-end-column="23" />
+        <state relative-caret-position="314">
+          <caret line="223" column="61" lean-forward="false" selection-start-line="223" selection-start-column="61" selection-end-line="223" selection-end-column="61" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
             <element signature="e#3907#5846#0" expanded="false" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/results/result_3_10">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="334">
+          <caret line="13805" column="25" lean-forward="true" selection-start-line="13805" selection-start-column="25" selection-end-line="13805" selection-end-column="25" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/adaptive.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="365">
+          <caret line="267" column="1" lean-forward="true" selection-start-line="267" selection-start-column="1" selection-end-line="267" selection-end-column="1" />
+          <folding />
         </state>
       </provider>
     </entry>
