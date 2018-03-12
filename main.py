@@ -2,9 +2,7 @@ import argparse
 import time
 from datetime import datetime
 from code.tools.utils import HMS, configurationPATH
-
-
-
+from code.config.configuration import Configuration
 
 def process():
 

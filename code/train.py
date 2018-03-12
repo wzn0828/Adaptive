@@ -22,6 +22,7 @@ def main(args):
         torch.cuda.manual_seed(args.seed)
 
     # Create model directory
+    args.model_path = os.path.join(args.exp_dir, 'models')
     if not os.path.exists(args.model_path):
         os.makedirs(args.model_path)
 
