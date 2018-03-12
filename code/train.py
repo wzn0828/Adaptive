@@ -15,63 +15,61 @@ from torchvision import transforms
 from torch.nn.utils.rnn import pack_padded_sequence
 
 
-def main(args):
+def main(cf):
     # To reproduce training results
-    torch.manual_seed(args.seed)
+    torch.manual_seed(cf.train_random_seed)
     if torch.cuda.is_available():
-        torch.cuda.manual_seed(args.seed)
+        torch.cuda.manual_seed(cf.train_random_seed)
 
     # Create model directory
-    args.model_path = os.path.join(args.exp_dir, 'models')
-    if not os.path.exists(args.model_path):
-        os.makedirs(args.model_path)
+    cf.model_path = os.path.join(cf.exp_dir, 'models')
+    if not os.path.exists(cf.model_path):
+        os.makedirs(cf.model_path)
 
     # Image Preprocessing
     # For normalization, see https://github.com/pytorch/vision#models
     transform = transforms.Compose([
-        transforms.RandomCrop(args.crop_size),
+        transforms.RandomCrop(cf.train_crop_size),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
         transforms.Normalize((0.485, 0.456, 0.406),
                              (0.229, 0.224, 0.225))])
 
     # Load vocabulary wrapper.
-    with open(args.vocab_path, 'rb') as f:
+    with open(cf.vocab_path, 'rb') as f:
         vocab = pickle.load(f)
 
     # Build training data loader
-    data_loader = get_loader(args.image_dir, args.caption_path, vocab,
-                             transform, args.batch_size,
-                             shuffle=True, num_workers=args.num_workers)
+    data_loader = get_loader(cf.image_dir, cf.train_anno_path, vocab,
+                             transform, cf.train_batch_size,
+                             shuffle=True, num_workers=cf.num_workers)
 
     # Load pretrained model or build from scratch
-    adaptive = Encoder2Decoder(args.embed_size, len(vocab), args.hidden_size)
+    adaptive = Encoder2Decoder(cf.lstm_embed_size, len(vocab), cf.lstm_hidden_size)
 
-    if args.pretrained:
-
-        adaptive.load_state_dict(torch.load(args.pretrained))
+    if cf.train_pretrained_model:
+        adaptive.load_state_dict(torch.load(cf.train_pretrained_model))
         # Get starting epoch #, note that model is named as '...your path to model/algoname-epoch#.pkl'
         # A little messy here.
-        # start_epoch = int(args.pretrained.split('/')[-1].split('-')[1].split('.')[0]) + 1
-        start_epoch = int(args.pretrained.split('/')[-1].split('-')[1].split('.')[0])
+        start_epoch = int(cf.train_pretrained_model.split('/')[-1].split('-')[1].split('.')[0]) + 1
 
     else:
         start_epoch = 1
 
     # Constructing CNN parameters for optimization, only fine-tuning higher layers
-    cnn_subs = list(adaptive.encoder.resnet_conv.children())[args.fine_tune_start_layer:]
+    cnn_subs = list(adaptive.encoder.resnet_conv.children())[cf.fine_tune_cnn_start_layer:]
     cnn_params = [list(sub_module.parameters()) for sub_module in cnn_subs]
     cnn_params = [item for sublist in cnn_params for item in sublist]
 
-    cnn_optimizer = torch.optim.Adam(cnn_params, lr=args.learning_rate_cnn,
-                                     betas=(args.alpha, args.beta))
+    cnn_optimizer = torch.optim.Adam(cnn_params, lr=cf.adam_learning_rate_cnn,
+                                     betas=(cf.adam_alpha, cf.adam_beta))
 
     # Other parameter optimization
     params = list(adaptive.encoder.affine_a.parameters()) + list(adaptive.encoder.affine_b.parameters()) \
              + list(adaptive.decoder.parameters())
 
     # Will decay later    
-    learning_rate = args.learning_rate
+    learning_rate = cf.adam_learning_rate
 
     # Language Modeling Loss
     LMcriterion = nn.CrossEntropyLoss()
@@ -90,19 +88,19 @@ def main(args):
     best_epoch = 0
 
     # Start Training 
-    for epoch in range(start_epoch, args.num_epochs + 1):
+    for epoch in range(start_epoch, cf.train_num_epochs + 1):
 
         # Start Learning Rate Decay
-        if epoch > args.lr_decay:
-            frac = float(epoch - args.lr_decay) / args.learning_rate_decay_every
+        if epoch > cf.train_lr_decay:
+            frac = float(epoch - cf.train_lr_decay) / cf.train_lr_decay_every
             decay_factor = math.pow(0.5, frac)
 
             # Decay the learning rate
-            learning_rate = args.learning_rate * decay_factor
+            learning_rate = cf.adam_learning_rate * decay_factor
 
         print('Learning Rate for Epoch %d: %.6f' % (epoch, learning_rate))
 
-        optimizer = torch.optim.Adam(params, lr=learning_rate, betas=(args.alpha, args.beta))
+        optimizer = torch.optim.Adam(params, lr=learning_rate, betas=(cf.adam_alpha, cf.adam_beta))
 
         # Language Modeling Training
         print('------------------Training for Epoch %d----------------' % (epoch))
@@ -129,30 +127,30 @@ def main(args):
 
                 # Gradient clipping for gradient exploding problem in LSTM
                 for p in adaptive.decoder.LSTM.parameters():
-                    p.data.clamp_(-args.clip, args.clip)
+                    p.data.clamp_(-cf.train_clip, cf.train_clip)
 
                 optimizer.step()
 
                 # Start CNN fine-tuning
-                if epoch > args.cnn_epoch:
+                if epoch > cf.fine_tune_cnn_start_epoch:
                     cnn_optimizer.step()
 
                 # Print log info
-                if i % args.log_step == 0:
+                if i % cf.train_log_step == 0:
                     print('Epoch [%d/%d], Step [%d/%d], CrossEntropy Loss: %.4f, Perplexity: %5.4f' % (epoch,
-                                                                                                       args.num_epochs,
+                                                                                                       cf.train_num_epochs,
                                                                                                        i, total_step,
                                                                                                        loss.data[0],
                                                                                                        np.exp(
-                                                                                                           loss.data[0]) ))
+                                                                                                           loss.data[0])))
 
                     # Save the Adaptive Attention model after each epoch
             torch.save(adaptive.state_dict(),
-                       os.path.join(args.model_path,
+                       os.path.join(cf.model_path,
                                     'adaptive-%d.pkl' % (epoch)))
 
         # Evaluation on validation set
-        cider = coco_eval(adaptive, args, epoch)
+        cider = coco_eval(adaptive, cf, epoch)
         cider_scores.append(cider)
 
         if cider > best_cider:
