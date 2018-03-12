@@ -1,16 +1,16 @@
 import json
-import torch
-import torch.nn as nn
-import numpy as np
 import os
-import glob
 import pickle
-from build_vocab import Vocabulary
-from torch.autograd import Variable 
+
+import matplotlib.pyplot as plt
+import numpy as np
+import torch
+from torch.autograd import Variable
 from torchvision import transforms, datasets
+
 from coco.PythonAPI.pycocotools.coco import COCO
 from coco.pycocoevalcap.eval import COCOEvalCap
-import matplotlib.pyplot as plt
+
 
 # Variable wrapper
 def to_var(x, volatile=False):

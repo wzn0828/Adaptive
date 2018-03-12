@@ -1,13 +1,10 @@
-import torch
-import torchvision.transforms as transforms
-import torch.utils.data as data
 import os
-import pickle
 import string
-import numpy as np
-import nltk
+
+import torch
+import torch.utils.data as data
 from PIL import Image
-from build_vocab import Vocabulary
+
 from coco.PythonAPI.pycocotools.coco import COCO
 
 

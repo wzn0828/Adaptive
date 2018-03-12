@@ -1,18 +1,16 @@
-import math
-import json
 import argparse
+import math
+import os
+
+import numpy as np
 import torch
 import torch.nn as nn
-import numpy as np
-import os
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '2,3'
 import pickle
-from utils import coco_eval, to_var
-from data_loader import get_loader
-from adaptive import Encoder2Decoder
-from build_vocab import Vocabulary
-from torch.autograd import Variable
+from code.tools.utils import coco_eval, to_var
+from code.data.data_loader import get_loader
+from code.models.adaptive import Encoder2Decoder
 from torchvision import transforms
 from torch.nn.utils.rnn import pack_padded_sequence
 
