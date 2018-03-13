@@ -2,7 +2,10 @@
 path_experiment             = 'Experiments'
 vocab_path                  = 'code/data/vocab.pkl'   # path for vocabulary wrapper
 resized_image_dir           = '/media/samsumg_1tb/Image_Caption/Datasets/MSCOCO/resized'   # directory for resized training images
-image_dir                   = '/media/samsumg_1tb/Image_Caption/Datasets/MSCOCO'
+image_dir                   = '/media/samsumg_1tb/Image_Caption/Datasets/MSCOCO'\
+captions_val_origin         = '/media/samsumg_1tb/Image_Caption/Datasets/MSCOCO/annotations/captions_val2014.json'
+captions_train_origin       = '/media/samsumg_1tb/Image_Caption/Datasets/MSCOCO/annotations/captions_train2014.json'
+splited_anno_path_prefix    = 'code/data/annotations/karpathy_split_'
 train_anno_path             = 'code/data/annotations/karpathy_split_train.json'  # path for train annotation json file
 val_anno_path               = 'code/data/annotations/karpathy_split_val.json'    # path for validation annotation json file
 test_anno_path              = 'code/data/annotations/karpathy_split_test.json'   # path for test annotation json file
@@ -46,3 +49,10 @@ resized_image_size          = 256                                       # size f
 #--------------------build_vocabury--------------------#
 vacab_build_Ornot           = False
 vocab_threshold             = 5                                         # minimum word count threshold
+
+
+#--------------------KarpathySplit--------------------#
+num_val                     = 5000
+num_test                    = 5000
+
+

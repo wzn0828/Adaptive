@@ -5,53 +5,54 @@
 import json
 from random import shuffle, seed
 
-seed(123)  # Make it reproducible
+def main_KarpathySplit(cf):
+    seed(cf.train_random_seed)  # Make it reproducible
 
-num_val = 5000
-num_test = 5000
+    num_val = cf.num_val
+    num_test = cf.num_test
 
-val = json.load(open('/media/samsumg_1tb/Image_Caption/Datasets/MSCOCO/annotations/captions_val2014.json', 'r'))
-train = json.load(open('/media/samsumg_1tb/Image_Caption/Datasets/MSCOCO/annotations/captions_train2014.json', 'r'))
+    val = json.load(open(cf.captions_val_origin, 'r'))
+    train = json.load(open(cf.captions_train_origin, 'r'))
 
-# Merge together
-imgs = val['images'] + train['images']
-annots = val['annotations'] + train['annotations']
+    # Merge together
+    imgs = val['images'] + train['images']
+    annots = val['annotations'] + train['annotations']
 
-shuffle(imgs)
+    shuffle(imgs)
 
-# Split into val, test, train
-dataset = {}
-dataset['val'] = imgs[:num_val]
-dataset['test'] = imgs[num_val: num_val + num_test]
-dataset['train'] = imgs[num_val + num_test:]
+    # Split into val, test, train
+    dataset = {}
+    dataset['val'] = imgs[:num_val]
+    dataset['test'] = imgs[num_val: num_val + num_test]
+    dataset['train'] = imgs[num_val + num_test:]
 
-# Group by image ids
-itoa = {}
-for a in annots:
-    imgid = a['image_id']
-    if imgid not in itoa:
-        itoa[imgid] = []
-    itoa[imgid].append(a)
+    # Group by image ids
+    itoa = {}
+    for a in annots:
+        imgid = a['image_id']
+        if imgid not in itoa:
+            itoa[imgid] = []
+        itoa[imgid].append(a)
 
 
-json_data = {}
-info = train['info']
-licenses = train['licenses']
+    json_data = {}
+    info = train['info']
+    licenses = train['licenses']
 
-split = ['val', 'test', 'train']
+    split = ['val', 'test', 'train']
 
-for subset in split:
+    for subset in split:
 
-    json_data[subset] = {'type': 'caption', 'info': info, 'licenses': licenses,
-                           'images': [], 'annotations': []}
+        json_data[subset] = {'type': 'caption', 'info': info, 'licenses': licenses,
+                               'images': [], 'annotations': []}
 
-    for img in dataset[subset]:
+        for img in dataset[subset]:
 
-        img_id = img['id']
-        anns = itoa[img_id]
+            img_id = img['id']
+            anns = itoa[img_id]
 
-        json_data[subset]['images'].append(img)
-        json_data[subset]['annotations'].extend(anns)
+            json_data[subset]['images'].append(img)
+            json_data[subset]['annotations'].extend(anns)
 
-    json.dump(json_data[subset], open('data/annotations/karpathy_split_' + subset + '.json', 'w'))
+        json.dump(json_data[subset], open(cf.splited_anno_path_prefix + subset + '.json', 'w'))
 
