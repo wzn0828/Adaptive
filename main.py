@@ -6,6 +6,7 @@ from code.config.configuration import Configuration
 from code.train import main_train
 from code.tools.resize import main_resize_images
 from code.data.build_vocab import main_build_vocab
+from code.data.KarpathySplit import main_KarpathySplit
 
 def process(cf):
 
@@ -16,6 +17,10 @@ def process(cf):
     if cf.vacab_build_Ornot:
         print('>---------vacal build---------<')
         main_build_vocab(cf)
+
+    if cf.KarpathySplitOrnot:
+        print('>---------KarpathySplit---------<')
+        main_KarpathySplit(cf)
 
     if cf.trainOrnot:
         print('>---------start train---------<')

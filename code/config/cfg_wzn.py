@@ -2,7 +2,7 @@
 path_experiment             = 'Experiments'
 vocab_path                  = 'code/data/vocab.pkl'   # path for vocabulary wrapper
 resized_image_dir           = '/media/samsumg_1tb/Image_Caption/Datasets/MSCOCO/resized'   # directory for resized training images
-image_dir                   = '/media/samsumg_1tb/Image_Caption/Datasets/MSCOCO'\
+image_dir                   = '/media/samsumg_1tb/Image_Caption/Datasets/MSCOCO'
 captions_val_origin         = '/media/samsumg_1tb/Image_Caption/Datasets/MSCOCO/annotations/captions_val2014.json'
 captions_train_origin       = '/media/samsumg_1tb/Image_Caption/Datasets/MSCOCO/annotations/captions_train2014.json'
 splited_anno_path_prefix    = 'code/data/annotations/karpathy_split_'
@@ -52,6 +52,7 @@ vocab_threshold             = 5                                         # minimu
 
 
 #--------------------KarpathySplit--------------------#
+KarpathySplitOrnot          =False
 num_val                     = 5000
 num_test                    = 5000
 
