@@ -15,7 +15,7 @@ from torchvision import transforms
 from torch.nn.utils.rnn import pack_padded_sequence
 
 
-def train(cf):
+def main_train(cf):
     # To reproduce training results
     torch.manual_seed(cf.train_random_seed)
     if torch.cuda.is_available():

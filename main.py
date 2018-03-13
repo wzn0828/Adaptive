@@ -3,9 +3,23 @@ import time
 from datetime import datetime
 from code.tools.utils import HMS, configurationPATH
 from code.config.configuration import Configuration
+from code.train import main_train
+from code.tools.resize import main_resize_images
+from code.data.build_vocab import main_build_vocab
 
-def process():
+def process(cf):
 
+    if cf.resizeOrnot:
+        print('>---------resize images---------<')
+        main_resize_images(cf)
+
+    if cf.vacab_build_Ornot:
+        print('>---------vacal build---------<')
+        main_build_vocab(cf)
+
+    if cf.trainOrnot:
+        print('>---------start train---------<')
+        main_train(cf)
 
 def main():
     # Get parameters from arguments

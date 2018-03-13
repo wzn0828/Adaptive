@@ -8,6 +8,7 @@ val_anno_path               = 'code/data/annotations/karpathy_split_val.json'   
 test_anno_path              = 'code/data/annotations/karpathy_split_test.json'   # path for test annotation json file
 
 #--------------------train--------------------#
+trainOrnot                  = False
 train_crop_size             = 224        # size for randomly cropping images
 train_log_step              = 10                                                 # step size for printing log info
 train_random_seed           = 123                                                # random seed for model reproduction
@@ -38,9 +39,10 @@ eval_batch_size             = 28                                        # on clu
 dataloader_num_workers      = 4
 
 #--------------------resize--------------------#
+resizeOrnot                 = False                                     # resize images from
 resized_image_size          = 256                                       # size for image after processing
-resized_image               = False                                     # resize images from
+
 
 #--------------------build_vocabury--------------------#
+vacab_build_Ornot           = False
 vocab_threshold             = 5                                         # minimum word count threshold
-vacab_build                 = False

@@ -26,7 +26,7 @@ def resize_folder_images(image_dir, output_dir, size):
                   % (i, num_images, output_dir))
 
 
-def resize_images(cf):
+def main_resize_images(cf):
     splits = ['train', 'val']
     years = ['2014']
 
