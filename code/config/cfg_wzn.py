@@ -39,4 +39,8 @@ dataloader_num_workers      = 4
 
 #--------------------resize--------------------#
 resized_image_size          = 256                                       # size for image after processing
+resized_image               = False                                     # resize images from
 
+#--------------------build_vocabury--------------------#
+vocab_threshold             = 5                                         # minimum word count threshold
+vacab_build                 = False

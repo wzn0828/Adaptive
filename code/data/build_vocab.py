@@ -54,24 +54,14 @@ def build_vocab(json, threshold):
         vocab.add_word(word)
     return vocab
 
-def main(args):
-    vocab = build_vocab(json=args.caption_path,
-                        threshold=args.threshold)
-    vocab_path = args.vocab_path
+def main_build_vocab(cf):
+    vocab = build_vocab(json=cf.train_anno_path,
+                        threshold=cf.vocab_threshold)
+    vocab_path = cf.vocab_path
     with open(vocab_path, 'wb') as f:
         pickle.dump(vocab, f)
     print("Total vocabulary size: %d" % len(vocab))
     print("Saved the vocabulary wrapper to '%s'" % vocab_path)
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--caption_path', type=str, 
-                        default='./data/annotations/karpathy_split_train.json', 
-                        help='path for train annotation file')
-    parser.add_argument('--vocab_path', type=str, default='./data/vocab.pkl', 
-                        help='path for saving vocabulary wrapper')
-    parser.add_argument('--threshold', type=int, default=5, 
-                        help='minimum word count threshold')
-    args = parser.parse_args()
-    main(args)
+
