@@ -52,7 +52,7 @@ vocab_threshold             = 5                                         # minimu
 
 
 #--------------------KarpathySplit--------------------#
-KarpathySplitOrnot          =False
+KarpathySplitOrnot          = False
 num_val                     = 5000
 num_test                    = 5000
 
