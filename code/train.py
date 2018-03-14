@@ -44,9 +44,10 @@ def main_train(cf):
                              transform, cf.train_batch_size,
                              shuffle=True, num_workers=cf.num_workers)
 
-    # Load pretrained model or build from scratch
+    # build model
     adaptive = Encoder2Decoder(cf.lstm_embed_size, len(vocab), cf.lstm_hidden_size)
 
+    # Load pretrained model or build from scratch
     if cf.train_pretrained_model:
         adaptive.load_state_dict(torch.load(cf.train_pretrained_model))
         # Get starting epoch #, note that model is named as '...your path to model/algoname-epoch#.pkl'
@@ -57,12 +58,7 @@ def main_train(cf):
         start_epoch = 1
 
     # Constructing CNN parameters for optimization, only fine-tuning higher layers
-    cnn_subs = list(adaptive.encoder.resnet_conv.children())[cf.fine_tune_cnn_start_layer:]
-    cnn_params = [list(sub_module.parameters()) for sub_module in cnn_subs]
-    cnn_params = [item for sublist in cnn_params for item in sublist]
-
-    cnn_optimizer = torch.optim.Adam(cnn_params, lr=cf.adam_learning_rate_cnn,
-                                     betas=(cf.adam_alpha, cf.adam_beta))
+    cnn_optimizer = get_cnn_parameters(adaptive, cf)
 
     # Other parameter optimization
     params = list(adaptive.encoder.affine_a.parameters()) + list(adaptive.encoder.affine_b.parameters()) \
@@ -74,7 +70,7 @@ def main_train(cf):
     # Language Modeling Loss
     LMcriterion = nn.CrossEntropyLoss()
 
-    # adaptive = torch.nn.DataParallel(adaptive, device_ids=[0, 1])   # by wzn, use multi-GPU
+
     # Change to GPU mode if available
     if torch.cuda.is_available():
         adaptive.cuda()
@@ -167,3 +163,18 @@ def main_train(cf):
                 print('No improvement with CIDEr in the last 6 epochs...Early stopping triggered.')
                 print('Model of best epoch #: %d with CIDEr score %.2f' % (best_epoch, best_cider))
                 break
+
+
+def get_cnn_parameters(adaptive, cf):
+    """
+    Constructing CNN parameters for optimization, only fine-tuning higher layers
+    :param adaptive: the encoder2decoder model
+    :param cf: config file
+    :return: patameters of cnn needed to be optimized
+    """
+    cnn_subs = list(adaptive.encoder.resnet_conv.children())[cf.fine_tune_cnn_start_layer:]
+    cnn_params = [list(sub_module.parameters()) for sub_module in cnn_subs]
+    cnn_params = [item for sublist in cnn_params for item in sublist]
+    cnn_optimizer = torch.optim.Adam(cnn_params, lr=cf.adam_learning_rate_cnn,
+                                     betas=(cf.adam_alpha, cf.adam_beta))
+    return cnn_optimizer
