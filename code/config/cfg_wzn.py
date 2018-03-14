@@ -21,6 +21,7 @@ train_batch_size            = 70                                        # on clu
 train_clip                  = 0.1                                       # Gradient clipping for gradient exploding problem in LSTM
 train_lr_decay              = 20                                        # epoch at which to start lr decay
 train_lr_decay_every        = 50                                        # decay learning rate at every this number
+train_early_stop            = True
 
 #--------------------hyper parameters--------------------#
 # CNN fine-tuning
