@@ -12,6 +12,9 @@ from coco.PythonAPI.pycocotools.coco import COCO
 from coco.pycocoevalcap.eval import COCOEvalCap
 from code.models.adaptive import Encoder2Decoder
 
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = '2,3'
+
 
 # Variable wrapper
 def to_var(x, volatile=False):

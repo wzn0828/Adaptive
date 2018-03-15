@@ -1,12 +1,9 @@
 import argparse
 import math
 import os
-
 import numpy as np
 import torch
 import torch.nn as nn
-
-os.environ['CUDA_VISIBLE_DEVICES'] = '2,3'
 import pickle
 from code.tools.utils import coco_eval, to_var
 from code.data.data_loader import get_loader

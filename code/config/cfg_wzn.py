@@ -24,8 +24,8 @@ train_lr_decay_every        = 50                                        # decay 
 train_early_stop            = True
 
 #--------------------test--------------------#
-testOrnot                   = False
-test_pretrained_model       = 'Experiments/models/adaptive-12.pkl'      # used pretrained model parameters in test
+testOrnot                   = True
+test_pretrained_model       = 'Experiments/2018-3-10/models/adaptive-12.pkl'      # used pretrained model parameters in test
 
 #--------------------hyper parameters--------------------#
 # CNN fine-tuning

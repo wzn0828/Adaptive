@@ -8,6 +8,9 @@ from code.tools.resize import main_resize_images
 from code.data.build_vocab import main_build_vocab
 from code.data.KarpathySplit import main_KarpathySplit
 from code.tools.utils import coco_eval
+from code.data.build_vocab import Vocabulary
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = '2,3'
 
 
 def process(cf):
