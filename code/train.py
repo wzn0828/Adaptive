@@ -45,7 +45,7 @@ def main_train(cf):
     adaptive = Encoder2Decoder(cf.lstm_embed_size, len(vocab), cf.lstm_hidden_size)
 
     # Load pretrained model or build from scratch
-    if cf.train_pretrained_model:
+    if cf.train_pretrained:
         adaptive.load_state_dict(torch.load(cf.train_pretrained_model))
         # Get starting epoch #, note that model is named as '...your path to model/algoname-epoch#.pkl'
         # A little messy here.

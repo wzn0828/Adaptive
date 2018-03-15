@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="4a8d3c54-1f4e-400b-9f00-4caa5cfd3856" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/code/config/cfg_wzn.py" afterPath="$PROJECT_DIR$/code/config/cfg_wzn.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/code/train.py" afterPath="$PROJECT_DIR$/code/train.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -28,12 +29,12 @@
       <file leaf-file-name="train.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/code/train.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="270">
-              <caret line="18" column="56" lean-forward="true" selection-start-line="18" selection-start-column="56" selection-end-line="18" selection-end-column="56" />
+            <state relative-caret-position="306">
+              <caret line="47" column="27" lean-forward="true" selection-start-line="47" selection-start-column="27" selection-end-line="47" selection-end-column="27" />
               <folding>
                 <element signature="e#0#15#0" expanded="true" />
-                <element signature="e#6319#6955#0" expanded="false" />
-                <element signature="e#7014#7584#0" expanded="false" />
+                <element signature="e#6313#6949#0" expanded="false" />
+                <element signature="e#7008#7578#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -42,8 +43,8 @@
       <file leaf-file-name="cfg_wzn.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/code/config/cfg_wzn.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-360">
-              <caret line="19" column="11" lean-forward="false" selection-start-line="19" selection-start-column="6" selection-end-line="19" selection-end-column="11" />
+            <state relative-caret-position="158">
+              <caret line="17" column="16" lean-forward="false" selection-start-line="17" selection-start-column="0" selection-end-line="17" selection-end-column="16" />
               <folding />
             </state>
           </provider>
@@ -87,7 +88,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>caption_val_path</find>
       <find>eval_size</find>
       <find>resized_image_dir</find>
       <find>eval_batch_size</find>
@@ -117,6 +117,7 @@
       <find>test_pretrained_model</find>
       <find>Evaluation performance on MS-COCO test dataset for pretrained_model</find>
       <find>batch</find>
+      <find>train_pretrained_model</find>
     </findStrings>
     <replaceStrings>
       <replace>cf</replace>
@@ -152,9 +153,9 @@
         <option value="$PROJECT_DIR$/for_wzn" />
         <option value="$PROJECT_DIR$/code/data/KarpathySplit.py" />
         <option value="$PROJECT_DIR$/code/config/configuration.py" />
-        <option value="$PROJECT_DIR$/code/config/cfg_wzn.py" />
         <option value="$PROJECT_DIR$/main.py" />
         <option value="$PROJECT_DIR$/code/tools/utils.py" />
+        <option value="$PROJECT_DIR$/code/config/cfg_wzn.py" />
         <option value="$PROJECT_DIR$/code/train.py" />
       </list>
     </option>
@@ -196,6 +197,19 @@
               <item name="Adaptive" type="b2602c69:ProjectViewProjectNode" />
               <item name="Adaptive" type="462c0819:PsiDirectoryNode" />
               <item name="Experiments" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Adaptive" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Adaptive" type="462c0819:PsiDirectoryNode" />
+              <item name="Experiments" type="462c0819:PsiDirectoryNode" />
+              <item name="2018-3-10" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Adaptive" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Adaptive" type="462c0819:PsiDirectoryNode" />
+              <item name="Experiments" type="462c0819:PsiDirectoryNode" />
+              <item name="2018-3-10" type="462c0819:PsiDirectoryNode" />
+              <item name="models" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -774,14 +788,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/code/config/cfg_wzn.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-360">
-          <caret line="19" column="11" lean-forward="false" selection-start-line="19" selection-start-column="6" selection-end-line="19" selection-end-column="11" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/coco/pycocoevalcap/eval.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="936">
@@ -815,14 +821,22 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/code/config/cfg_wzn.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="158">
+          <caret line="17" column="16" lean-forward="false" selection-start-line="17" selection-start-column="0" selection-end-line="17" selection-end-column="16" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/code/train.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="18" column="56" lean-forward="true" selection-start-line="18" selection-start-column="56" selection-end-line="18" selection-end-column="56" />
+        <state relative-caret-position="306">
+          <caret line="47" column="27" lean-forward="true" selection-start-line="47" selection-start-column="27" selection-end-line="47" selection-end-column="27" />
           <folding>
             <element signature="e#0#15#0" expanded="true" />
-            <element signature="e#6319#6955#0" expanded="false" />
-            <element signature="e#7014#7584#0" expanded="false" />
+            <element signature="e#6313#6949#0" expanded="false" />
+            <element signature="e#7008#7578#0" expanded="false" />
           </folding>
         </state>
       </provider>

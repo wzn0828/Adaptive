@@ -15,6 +15,7 @@ trainOrnot                  = False
 train_crop_size             = 224        # size for randomly cropping images
 train_log_step              = 10                                                 # step size for printing log info
 train_random_seed           = 123                                                # random seed for model reproduction
+train_pretrained            = False         # use train_pretrained_model or not
 train_pretrained_model      = ''      # [''|'path'] path of used model'] start from checkpoint or scratch, '' represents start from scratch
 train_num_epochs            = 50                                        # the maximum epochs
 train_batch_size            = 70                                        # on cluster setup, 60 each x 4 for Huckle server
