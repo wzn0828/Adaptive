@@ -1,5 +1,5 @@
 #--------------------path--------------------#
-path_experiment             = 'Experiments'
+experiment_path             = 'Experiments'
 vocab_path                  = 'code/data/vocab.pkl'   # path for vocabulary wrapper
 resized_image_dir           = '/media/samsumg_1tb/Image_Caption/Datasets/MSCOCO/resized'   # directory for resized training images
 image_dir                   = '/media/samsumg_1tb/Image_Caption/Datasets/MSCOCO'
@@ -15,7 +15,7 @@ trainOrnot                  = False
 train_crop_size             = 224        # size for randomly cropping images
 train_log_step              = 10                                                 # step size for printing log info
 train_random_seed           = 123                                                # random seed for model reproduction
-train_pretrained_model      = 'Experiments/models/adaptive-12.pkl'      # [''|'path'] path of used model'] start from checkpoint or scratch, '' represents start from scratch
+train_pretrained_model      = ''      # [''|'path'] path of used model'] start from checkpoint or scratch, '' represents start from scratch
 train_num_epochs            = 50                                        # the maximum epochs
 train_batch_size            = 70                                        # on cluster setup, 60 each x 4 for Huckle server
 train_clip                  = 0.1                                       # Gradient clipping for gradient exploding problem in LSTM

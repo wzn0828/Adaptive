@@ -27,29 +27,33 @@ class Configuration():
         print(self.config_path)
         cf = imp.load_source('config', self.config_path)
 
-        # # experiment description
+        # experiment description
+        cf.model_description = self.get_model_description(cf)
+        cf.exp_dir = os.path.join(cf.experiment_path, cf.model_description + '_' * 3 + datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))  # Enable log file
 
-        # if cf.A_star_search_3D_multiprocessing_multicost or cf.A_star_search_3D_multiprocessing_rainfall_wind:
-        #     if cf.risky:
-        #         cf.model_description += '_risky'
-        #     elif cf.wind_exp:
-        #         cf.model_description += '_wind_exp_mean_' + str(cf.wind_exp_mean) + '_std_' + str(cf.wind_exp_std)
-
-
-        # experiment directory
-        if True:  # This is for submitting test file
-            cf.exp_dir = os.path.join(cf.path_experiment, 'Test_' + cf.model_description + '_' * 3 + datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
-        else:
-            cf.exp_dir = os.path.join(cf.path_experiment, 'Train_' + cf.model_description + '_' * 3 + datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
-
-        if True:
-            # Enable log file
-            os.mkdir(cf.exp_dir)
-            cf.log_file = os.path.join(cf.exp_dir, "logfile.log")
-            sys.stdout = Logger(cf.log_file)
-            # we print the configuration file here so that the configuration is traceable
-            print(help(cf))
+        os.mkdir(cf.exp_dir)
+        cf.log_file = os.path.join(cf.exp_dir, "logfile.log")
+        sys.stdout = Logger(cf.log_file)
+        # we print the configuration file here so that the configuration is traceable
+        print(help(cf))
 
         return cf
+
+    def get_model_description(self, cf):
+        model_description = ''
+        if cf.resizeOrnot:
+            model_description += 'resize_images_size_' + str(cf.resized_image_size)
+        if cf.vacab_build_Ornot:
+            model_description += 'build_vocabulary_vocab_threshold' + str(cf.vocab_threshold)
+        if cf.KarpathySplitOrnot:
+            model_description += 'Karpathy_Split'
+        if cf.trainOrnot:
+            model_description += 'Train_lr_' + str(cf.adam_learning_rate) + '_cnnlr_' + str(
+                cf.adam_learning_rate_cnn) + '_cnn_start_layer_' + str(
+                cf.fine_tune_cnn_start_layer) + '_cnn_start_epoch_' + str(cf.fine_tune_cnn_start_epoch)
+        if cf.testOrnot:
+            model_description += 'Test_' + cf.test_pretrained_model.replace('/', '_').split('.')[0]
+
+        return model_description
 
 
