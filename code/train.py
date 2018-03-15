@@ -16,7 +16,7 @@ def main_train(cf):
     # To reproduce training results
     torch.manual_seed(cf.train_random_seed)
     if torch.cuda.is_available():
-        torch.cuda.manual_seed(cf.train_random_seed)
+        torch.cuda.manual_seed_all(cf.train_random_seed)
 
     # Create model directory
     cf.trained_model_path = os.path.join(cf.exp_dir, 'trained_models')
