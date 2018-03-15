@@ -26,6 +26,10 @@ def process(cf):
         print('>---------start train---------<')
         main_train(cf)
 
+    if cf.testOrnot:
+        print('>---------start test---------<')
+        main_train(cf)
+
 def main():
     # Get parameters from arguments
     parser = argparse.ArgumentParser(description='Model training')

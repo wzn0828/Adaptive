@@ -10,6 +10,7 @@ from torchvision import transforms, datasets
 
 from coco.PythonAPI.pycocotools.coco import COCO
 from coco.pycocoevalcap.eval import COCOEvalCap
+from code.models.adaptive import Encoder2Decoder
 
 
 # Variable wrapper
@@ -95,41 +96,56 @@ class CocoEvalLoader( datasets.ImageFolder ):
         return img, img_id, filename
 
 # MSCOCO Evaluation function
-def coco_eval( model, cf, epoch ):
+def coco_eval(model, cf, epoch=0, test_mode = False):
     
     '''
     model: trained model to be evaluated
     cf: pre-set parameters
     epoch: epoch #, for disp purpose
+    test_mode: flag of test or validation
     '''
-    
-    model.eval()
-    
-    # Validation images are required to be resized to 224x224 already
-    transform = transforms.Compose([ 
-        transforms.Scale((cf.train_crop_size, cf.train_crop_size)),
-        transforms.ToTensor(), 
-        transforms.Normalize((0.485, 0.456, 0.406), 
-                             (0.229, 0.224, 0.225))])
-    
+
     # Load the vocabulary
-    with open( cf.vocab_path, 'rb' ) as f:
-         vocab = pickle.load( f )
-    
-    # Wrapper the COCO VAL dataset
-    eval_data_loader = torch.utils.data.DataLoader( 
-        CocoEvalLoader(cf.resized_image_dir, cf.val_anno_path, transform),
-        batch_size = cf.eval_batch_size,
-        shuffle = False, num_workers = cf.dataloader_num_workers,
-        drop_last = False )  
+    with open(cf.vocab_path, 'rb') as f:
+         vocab = pickle.load(f)
+
+    # build model
+    model = Encoder2Decoder(cf.lstm_embed_size, len(vocab), cf.lstm_hidden_size)
+
+    # load parameters dict of model for test
+    if test_mode:
+        model.load_state_dict(torch.load(cf.test_pretrained_model))
+
+    model.eval()
+
+    # Validation images are required to be resized to 224x224 already
+    transform = transforms.Compose([
+        transforms.Scale((cf.train_crop_size, cf.train_crop_size)),
+        transforms.ToTensor(),
+        transforms.Normalize((0.485, 0.456, 0.406),
+                             (0.229, 0.224, 0.225))])
+
+    # Wrapper the COCO VAL or TEST dataset
+    ann_path = cf.val_anno_path
+    if test_mode:
+        ann_path = cf.test_anno_path
+    data_loader = torch.utils.data.DataLoader(
+        CocoEvalLoader(cf.resized_image_dir, ann_path, transform),
+        batch_size=cf.eval_batch_size,
+        shuffle=False, num_workers=cf.dataloader_num_workers,
+        drop_last=False)
     
     # Generated captions to be compared with GT
     results = []
-    print('---------------------Start evaluation on MS-COCO dataset-----------------------')
-    for i, (images, image_ids, _ ) in enumerate( eval_data_loader ):
+    print_string = '---------------------Start evaluation on MS-COCO dataset-----------------------'
+    if test_mode:
+        print_string = '---------------------Start test on MS-COCO dataset-----------------------'
+    print(print_string)
+
+    for i, (images, image_ids, _) in enumerate(data_loader):
         
-        images = to_var( images )
-        generated_captions, _, _ = model.sampler( images )
+        images = to_var(images)
+        generated_captions, _, _ = model.sampler(images)
         
         if torch.cuda.is_available():
             captions = generated_captions.cpu().data.numpy()
@@ -137,45 +153,57 @@ def coco_eval( model, cf, epoch ):
             captions = generated_captions.data.numpy()
         
         # Build caption based on Vocabulary and the '<end>' token
-        for image_idx in range( captions.shape[0] ):
+        for image_idx in range(captions.shape[0]):
             
-            sampled_ids = captions[ image_idx ]
+            sampled_ids = captions[image_idx]
             sampled_caption = []
             
             for word_id in sampled_ids:
                 
-                word = vocab.idx2word[ word_id ]
+                word = vocab.idx2word[word_id]
                 if word == '<end>':
                     break
                 else:
-                    sampled_caption.append( word )
+                    sampled_caption.append(word)
             
-            sentence = ' '.join( sampled_caption )
+            sentence = ' '.join(sampled_caption)
             
-            temp = { 'image_id': int( image_ids[ image_idx ] ), 'caption': sentence }
-            results.append( temp )
+            temp = {'image_id': int(image_ids[image_idx]), 'caption': sentence}
+            results.append(temp)
         
         # Disp evaluation process
         if (i+1) % 10 == 0:
-            print('[%d/%d]' % ((i + 1), len(eval_data_loader)))
+            print('[%d/%d]' % ((i + 1), len(data_loader)))
 
     print('------------------------Caption Generated-------------------------------------')
 
     # Evaluate the results based on the COCO API
-    resFile = 'results/mixed-' + str( epoch ) + '.json'
-    json.dump( results, open( resFile , 'w' ) )
+
+    # Create result directory
+    if test_mode:
+        test_pretrained_model_name = cf.test_pretrained_model.replace('/', '_').split('.')[0]
+        resFile = os.path.join(cf.exp_dir, test_pretrained_model_name + '.json')
+    else:
+        cf.val_result_path = os.path.join(cf.exp_dir, 'val_results')
+        if not os.path.exists(cf.val_result_path):
+            os.makedirs(cf.val_result_path)
+        resFile = os.path.join(cf.val_result_path, 'mixed-' + str(epoch) + '.json')
+
+    json.dump(results, open(resFile, 'w'))
+
+    coco = COCO(ann_path)
+    cocoRes = coco.loadRes(resFile)
     
-    annFile = cf.val_anno_path
-    coco = COCO( annFile )
-    cocoRes = coco.loadRes( resFile )
-    
-    cocoEval = COCOEvalCap( coco, cocoRes )
+    cocoEval = COCOEvalCap(coco, cocoRes)
     cocoEval.params['image_id'] = cocoRes.getImgIds() 
     cocoEval.evaluate()
     
-    # Get CIDEr score for validation evaluation
+    # Get CIDEr score for validation or test evaluation
     cider = 0.
-    print('-----------Evaluation performance on MS-COCO validation dataset for Epoch %d----------' % (epoch))
+    print_string = '-----------Evaluation performance on MS-COCO validation dataset for Epoch %d----------' % epoch
+    if test_mode:
+        print_string = '-----------Evaluation performance on MS-COCO test dataset for pretrained_model: %s----------' % test_pretrained_model_name
+    print(print_string)
     for metric, score in cocoEval.eval.items():
         
         print('%s: %.4f' % (metric, score))

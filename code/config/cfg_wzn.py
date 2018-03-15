@@ -23,6 +23,10 @@ train_lr_decay              = 20                                        # epoch 
 train_lr_decay_every        = 50                                        # decay learning rate at every this number
 train_early_stop            = True
 
+#--------------------test--------------------#
+testOrnot                   = False
+test_pretrained_model       = 'Experiments/models/adaptive-12.pkl'      # used pretrained model parameters in test
+
 #--------------------hyper parameters--------------------#
 # CNN fine-tuning
 fine_tune_cnn_start_layer   = 5                                         # CNN fine-tuning layers from: [0-7]

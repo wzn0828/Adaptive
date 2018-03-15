@@ -22,9 +22,9 @@ def main_train(cf):
         torch.cuda.manual_seed(cf.train_random_seed)
 
     # Create model directory
-    cf.model_path = os.path.join(cf.exp_dir, 'models')
-    if not os.path.exists(cf.model_path):
-        os.makedirs(cf.model_path)
+    cf.trained_model_path = os.path.join(cf.exp_dir, 'trained_models')
+    if not os.path.exists(cf.trained_model_path):
+        os.makedirs(cf.trained_model_path)
 
     # Image Preprocessing
     # For normalization, see https://github.com/pytorch/vision#models
@@ -135,7 +135,7 @@ def main_train(cf):
 
         # Save the Adaptive Attention model after each epoch
         torch.save(adaptive.state_dict(),
-                   os.path.join(cf.model_path,
+                   os.path.join(cf.trained_model_path,
                                 'adaptive-%d.pkl' % (epoch)))
 
         # Evaluation on validation set
