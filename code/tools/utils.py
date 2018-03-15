@@ -12,8 +12,6 @@ from coco.PythonAPI.pycocotools.coco import COCO
 from coco.pycocoevalcap.eval import COCOEvalCap
 from code.models.adaptive import Encoder2Decoder
 
-import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '2,3'
 
 
 # Variable wrapper
@@ -117,6 +115,9 @@ def coco_eval(cf, model = None, epoch=0, test_mode = False):
         # build model
         model = Encoder2Decoder(cf.lstm_embed_size, len(vocab), cf.lstm_hidden_size)
         model.load_state_dict(torch.load(cf.test_pretrained_model))
+        # Change to GPU mode if available
+        if torch.cuda.is_available():
+            model.cuda()
 
     model.eval()
 
@@ -206,8 +207,8 @@ def coco_eval(cf, model = None, epoch=0, test_mode = False):
     if test_mode:
         print_string = '-----------Evaluation performance on MS-COCO test dataset for pretrained_model: %s----------' % test_pretrained_model_name
     print(print_string)
+
     for metric, score in cocoEval.eval.items():
-        
         print('%s: %.4f' % (metric, score))
         if metric == 'CIDEr':
             cider = score
