@@ -96,7 +96,7 @@ class CocoEvalLoader( datasets.ImageFolder ):
         return img, img_id, filename
 
 # MSCOCO Evaluation function
-def coco_eval(model, cf, epoch=0, test_mode = False):
+def coco_eval(cf, model = None, epoch=0, test_mode = False):
     
     '''
     model: trained model to be evaluated
@@ -109,11 +109,10 @@ def coco_eval(model, cf, epoch=0, test_mode = False):
     with open(cf.vocab_path, 'rb') as f:
          vocab = pickle.load(f)
 
-    # build model
-    model = Encoder2Decoder(cf.lstm_embed_size, len(vocab), cf.lstm_hidden_size)
-
     # load parameters dict of model for test
     if test_mode:
+        # build model
+        model = Encoder2Decoder(cf.lstm_embed_size, len(vocab), cf.lstm_hidden_size)
         model.load_state_dict(torch.load(cf.test_pretrained_model))
 
     model.eval()

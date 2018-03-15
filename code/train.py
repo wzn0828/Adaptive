@@ -132,14 +132,13 @@ def main_train(cf):
                                                                                                    np.exp(
                                                                                                        loss.data[0])))
 
-
         # Save the Adaptive Attention model after each epoch
         torch.save(adaptive.state_dict(),
                    os.path.join(cf.trained_model_path,
                                 'adaptive-%d.pkl' % (epoch)))
 
         # Evaluation on validation set
-        cider = coco_eval(adaptive, cf, epoch)
+        cider = coco_eval(cf, model=adaptive, epoch=epoch)
         cider_scores.append(cider)
 
         # record the best cider and best epoch
@@ -153,8 +152,6 @@ def main_train(cf):
             break
 
     print('Model of best epoch #: %d with CIDEr score %.2f' % (best_epoch, best_cider))
-
-
 
 
 def get_optimizer(cf, learning_rate, params):

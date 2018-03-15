@@ -7,6 +7,8 @@ from code.train import main_train
 from code.tools.resize import main_resize_images
 from code.data.build_vocab import main_build_vocab
 from code.data.KarpathySplit import main_KarpathySplit
+from code.tools.utils import coco_eval
+
 
 def process(cf):
 
@@ -28,7 +30,7 @@ def process(cf):
 
     if cf.testOrnot:
         print('>---------start test---------<')
-        main_train(cf)
+        coco_eval(cf, test_mode=True)
 
 def main():
     # Get parameters from arguments
