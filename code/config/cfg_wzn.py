@@ -11,21 +11,21 @@ val_anno_path               = 'code/data/annotations/karpathy_split_val.json'   
 test_anno_path              = 'code/data/annotations/karpathy_split_test.json'   # path for test annotation json file
 
 #--------------------train--------------------#
-trainOrnot                  = False
+trainOrnot                  = True
 train_crop_size             = 224        # size for randomly cropping images
 train_log_step              = 10                                                 # step size for printing log info
 train_random_seed           = 123                                                # random seed for model reproduction
-train_pretrained            = False         # use train_pretrained_model or not
-train_pretrained_model      = ''      # [''|'path'] path of used model'] start from checkpoint or scratch, '' represents start from scratch
+train_pretrained            = True         # use train_pretrained_model or not
+train_pretrained_model      = 'Experiments/Train_lr_0.0005_cnnlr_1e-05_cnn_start_layer_5_cnn_start_epoch_20___2018-03-15-18-06-56/trained_models/adaptive-19.pkl'      # [''|'path'] path of used model'] start from checkpoint or scratch, '' represents start from scratch
 train_num_epochs            = 50                                        # the maximum epochs
-train_batch_size            = 70                                        # on cluster setup, 60 each x 4 for Huckle server
+train_batch_size            = 99                                        # on cluster setup, 60 each x 4 for Huckle server
 train_clip                  = 0.1                                       # Gradient clipping for gradient exploding problem in LSTM
 train_lr_decay              = 20                                        # epoch at which to start lr decay
 train_lr_decay_every        = 50                                        # decay learning rate at every this number
-train_early_stop            = True
+train_early_stop            = False
 
 #--------------------test--------------------#
-testOrnot                   = True
+testOrnot                   = False
 test_pretrained_model       = 'Experiments/2018-3-10/models/adaptive-12.pkl'      # used pretrained model parameters in test
 
 #--------------------hyper parameters--------------------#
@@ -36,21 +36,20 @@ fine_tune_cnn_start_epoch   = 20                                        # start 
 # Optimizer Adam parameter
 adam_alpha                  = 0.8                                       # alpha in Adam
 adam_beta                   = 0.999                                     # beta in Adam
-adam_learning_rate          = 4e-4                                      # learning rate for the whole model
-adam_learning_rate_cnn      = 1e-4                                      # learning rate for fine-tuning CNN
+adam_learning_rate          = 5e-4                                      # learning rate for the whole model
+adam_learning_rate_cnn      = 1e-5                                      # learning rate for fine-tuning CNN
 
 # LSTM hyper parameters
 lstm_embed_size             = 256                                       # dimension of word embedding vectors, also dimension of v_g
 lstm_hidden_size            = 512                                       # dimension of lstm hidden states
 
 # For eval_size > 30, it will cause cuda OOM error on Huckleberry
-eval_batch_size             = 28                                        # on cluster setup, 30 each x 4
+eval_batch_size             = 54                                       # on cluster setup, 30 each x 4
 dataloader_num_workers      = 4
 
 #--------------------resize--------------------#
 resizeOrnot                 = False                                     # resize images from
 resized_image_size          = 256                                       # size for image after processing
-
 
 #--------------------build_vocabury--------------------#
 vacab_build_Ornot           = False

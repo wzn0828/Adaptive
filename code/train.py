@@ -39,7 +39,7 @@ def main_train(cf):
     # Build training data loader
     data_loader = get_loader(cf.resized_image_dir, cf.train_anno_path, vocab,
                              transform, cf.train_batch_size,
-                             shuffle=True, num_workers=cf.num_workers)
+                             shuffle=True, num_workers=cf.dataloader_num_workers)
 
     # build model
     adaptive = Encoder2Decoder(cf.lstm_embed_size, len(vocab), cf.lstm_hidden_size)
@@ -55,7 +55,7 @@ def main_train(cf):
         start_epoch = 1
 
     # Constructing CNN parameters for optimization, only fine-tuning higher layers
-    cnn_optimizer = get_cnn_parameters(adaptive, cf)
+    cnn_optimizer = get_cnn_optimizer(adaptive, cf)
 
     # Other parameter optimization
     params = list(adaptive.encoder.affine_a.parameters()) + list(adaptive.encoder.affine_b.parameters()) \
@@ -91,6 +91,7 @@ def main_train(cf):
 
         # Language Modeling Training
         print('------------------Training for Epoch %d----------------' % (epoch))
+
         for i, (images, captions, lengths, _, _) in enumerate(data_loader):
 
             # Set mini-batch dataset
@@ -137,6 +138,8 @@ def main_train(cf):
         # Evaluation on validation set
         cider = coco_eval(cf, model=adaptive, epoch=epoch)
         cider_scores.append(cider)
+        print('#---printing cider_scores---#')
+        print(cider_scores)
 
         # record the best cider and best epoch
         if cider > best_cider:
@@ -144,8 +147,8 @@ def main_train(cf):
             best_epoch = epoch
 
         # judge whether early stop
-        early_stop_Ornot = early_stop_Ornot(cf, cider_scores, best_cider)
-        if early_stop_Ornot:
+        whether_early_stop = early_stop_Ornot(cf, cider_scores, best_cider)
+        if whether_early_stop:
             break
 
     print('Model of best epoch #: %d with CIDEr score %.2f' % (best_epoch, best_cider))
@@ -174,7 +177,7 @@ def lr_decay(cf, epoch, learning_rate):
     return learning_rate
 
 
-def get_cnn_parameters(adaptive, cf):
+def get_cnn_optimizer(adaptive, cf):
     """
     Constructing CNN parameters for optimization, only fine-tuning higher layers
     :param adaptive: the encoder2decoder model

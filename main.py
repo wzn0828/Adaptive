@@ -10,7 +10,7 @@ from code.data.KarpathySplit import main_KarpathySplit
 from code.tools.utils import coco_eval
 from code.data.build_vocab import Vocabulary
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '2,3'
+os.environ['CUDA_VISIBLE_DEVICES'] = '1,2,3'
 
 
 def process(cf):
