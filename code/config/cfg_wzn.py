@@ -16,7 +16,7 @@ train_crop_size             = 224        # size for randomly cropping images
 train_log_step              = 10                                                 # step size for printing log info
 train_random_seed           = 123                                                # random seed for model reproduction
 train_pretrained            = True         # use train_pretrained_model or not
-train_pretrained_model      = 'Experiments/Train_lr_0.0005_cnnlr_1e-05_cnn_start_layer_5_cnn_start_epoch_20___2018-03-15-18-06-56/trained_models/adaptive-19.pkl'      # [''|'path'] path of used model'] start from checkpoint or scratch, '' represents start from scratch
+train_pretrained_model      = 'Experiments/Train_lr_0.0005_cnnlr_1e-05_cnn_start_layer_5_cnn_start_epoch_20___2018-03-15-19-55-18/trained_models/adaptive-33.pkl'      # [''|'path'] path of used model'] start from checkpoint or scratch, '' represents start from scratch
 train_num_epochs            = 50                                        # the maximum epochs
 train_batch_size            = 99                                        # on cluster setup, 60 each x 4 for Huckle server
 train_clip                  = 0.1                                       # Gradient clipping for gradient exploding problem in LSTM
@@ -36,7 +36,7 @@ fine_tune_cnn_start_epoch   = 20                                        # start 
 # Optimizer Adam parameter
 adam_alpha                  = 0.8                                       # alpha in Adam
 adam_beta                   = 0.999                                     # beta in Adam
-adam_learning_rate          = 5e-4                                      # learning rate for the whole model
+adam_learning_rate          = 5e-5                                      # learning rate for the whole model
 adam_learning_rate_cnn      = 1e-5                                      # learning rate for fine-tuning CNN
 
 # LSTM hyper parameters

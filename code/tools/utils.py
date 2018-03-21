@@ -96,7 +96,7 @@ class CocoEvalLoader( datasets.ImageFolder ):
 
         return img, img_id, filename
 
-# MSCOCO Evaluation function
+# MSCOCO Evaluation function on validation or test dataset
 def coco_eval(cf, model = None, epoch=0, test_mode = False):
     
     '''
