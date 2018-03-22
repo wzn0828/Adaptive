@@ -182,7 +182,7 @@ def get_cnn_optimizer(adaptive, cf):
     Constructing CNN parameters for optimization, only fine-tuning higher layers
     :param adaptive: the encoder2decoder model
     :param cf: config file
-    :return: patameters of cnn needed to be optimized
+    :return: parameters of cnn needed to be optimized
     """
     cnn_subs = list(adaptive.encoder.resnet_conv.children())[cf.fine_tune_cnn_start_layer:]
     cnn_params = [list(sub_module.parameters()) for sub_module in cnn_subs]
