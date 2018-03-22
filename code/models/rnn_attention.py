@@ -6,6 +6,7 @@ from torch.autograd import Variable
 import torch.nn.functional as F
 from torch.nn import init
 
+
 # ========================================Recurrent Attention========================================
 # Encoder, doing this for extracting cnn features. Temporarily, this is the same as adaptive.py.
 class AttentiveCNN(nn.Module):
