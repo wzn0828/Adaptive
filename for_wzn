@@ -1,0 +1,5 @@
+1\ In the step of 'Normalize', why the mean value and standard deviation are these values? A: That's decided by ImageNet.
+
+3\ beam search.
+4\ train vision.
+5\ loss curve.
