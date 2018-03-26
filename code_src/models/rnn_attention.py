@@ -57,7 +57,7 @@ class AttentiveCNN(nn.Module):
         return V, v_g
 
 
-# Attention Block for C_hat calculation
+# Attention Block for C_hat and attention value calculation
 class Atten(nn.Module):
     def __init__(self, hidden_size):
         super(Atten, self).__init__()
@@ -87,32 +87,43 @@ class Atten(nn.Module):
 
         # W_v * V + W_g * h_t * 1^T
         content_v = self.affine_v(self.dropout(V)).unsqueeze(1) \
-                    + self.affine_g(self.dropout(h_t)).unsqueeze(2)
+                    + self.affine_g(self.dropout(h_t)).unsqueeze(2)     # size of [cf.train_batch_size, maxlength(captions), 49,49]
 
         # z_t = W_h * tanh( content_v )
-        z_t = self.affine_h(self.dropout(F.tanh(content_v))).squeeze(3)
+        z_t = self.affine_h(self.dropout(F.tanh(content_v))).squeeze(3)      # size of [cf.train_batch_size, maxlength(captions), 49]
 
-        # alpha_t = F.softmax(z_t.view(-1, z_t.size(2))).view(z_t.size(0), z_t.size(1), -1)
+        # alpha_t = F.softmax(z_t.view(-1, z_t.size(2))).view(z_t.size(0), z_t.size(1), -1)     # size of [cf.train_batch_size, maxlength(captions),49]
         # use sigmoid instead of softmax.
-        alpha_t = F.sigmoid(z_t.view(-1, z_t.size(2))).view(z_t.size(0), z_t.size(1), -1)
+        alpha_t = F.sigmoid(z_t)    # size of [cf.train_batch_size, maxlength(captions),49]
+
+        # calculated V_weighted
+        V = V.unsqueeze(1)      # size of [cf.train_batch_size, 1, 49, cf.lstm_hidden_size]
+        alpha_t = alpha_t.unsqueeze(3)  # size of [cf.train_batch_size, maxlength(captions), 49, 1]
+        V_weighted = alpha_t*V       # size of [cf.train_batch_size, maxlength(captions), 49, cf.lstm_hidden_size]
+
+
+        
+
+
+
 
 
         # Construct c_t: B x seq x hidden_size
-        c_t = torch.bmm(alpha_t, V).squeeze(2)
+        c_t = torch.bmm(alpha_t, V).squeeze(2)      # size of [cf.train_batch_size, maxlength(captions), cf.lstm_hidden_size]
 
         # W_s * s_t + W_g * h_t
-        content_s = self.affine_s(self.dropout(s_t)) + self.affine_g(self.dropout(h_t))
+        content_s = self.affine_s(self.dropout(s_t)) + self.affine_g(self.dropout(h_t))     # size of [cf.train_batch_size, maxlength(captions), 49]
         # w_t * tanh( content_s )
-        z_t_extended = self.affine_h(self.dropout(F.tanh(content_s)))
+        z_t_extended = self.affine_h(self.dropout(F.tanh(content_s)))       # size of [cf.train_batch_size, maxlength(captions), 1]
 
         # Attention score between sentinel and image content
-        extended = torch.cat((z_t, z_t_extended), dim=2)
-        alpha_hat_t = F.softmax(extended.view(-1, extended.size(2))).view(extended.size(0), extended.size(1), -1)
-        beta_t = alpha_hat_t[:, :, -1]
+        extended = torch.cat((z_t, z_t_extended), dim=2)         # size of [cf.train_batch_size, maxlength(captions), 50]
+        alpha_hat_t = F.softmax(extended.view(-1, extended.size(2))).view(extended.size(0), extended.size(1), -1)   # size of [cf.train_batch_size, maxlength(captions), 50]
+        beta_t = alpha_hat_t[:, :, -1]      # size of [cf.train_batch_size, maxlength(captions)]
 
         # c_hat_t = beta * s_t + ( 1 - beta ) * c_t
-        beta_t = beta_t.unsqueeze(2)
-        c_hat_t = beta_t * s_t + (1 - beta_t) * c_t
+        beta_t = beta_t.unsqueeze(2)        # size of [cf.train_batch_size, maxlength(captions), 1]
+        c_hat_t = beta_t * s_t + (1 - beta_t) * c_t     # size of [cf.train_batch_size, maxlength(captions), 512]
 
         return c_hat_t, alpha_t, beta_t
 
@@ -158,8 +169,8 @@ class AdaptiveBlock(nn.Module):
         else:
             hiddens_t_1 = h0
 
-        # Get Sentinel embedding, it's calculated blockly
-        sentinel = self.sentinel(x, hiddens_t_1, cells)     # size of [cf.train_batch_size, maxlength(captions), cf.lstm_hidden_size]
+        # # Get Sentinel embedding, it's calculated blockly
+        # sentinel = self.sentinel(x, hiddens_t_1, cells)     # size of [cf.train_batch_size, maxlength(captions), cf.lstm_hidden_size]
 
         # Get C_t, Spatial attention, sentinel score
         c_hat, atten_weights, beta = self.atten(V, hiddens, sentinel)   # size of c_hat is [cf.train_batch_size, maxlength(captions), cf.lstm_hidden_size]
