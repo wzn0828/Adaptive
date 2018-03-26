@@ -1,16 +1,16 @@
 import argparse
 import time
 from datetime import datetime
-from code.tools.utils import HMS, configurationPATH
-from code.config.configuration import Configuration
-from code.train import main_train
-from code.tools.resize import main_resize_images
-from code.data.build_vocab import main_build_vocab
-from code.data.KarpathySplit import main_KarpathySplit
-from code.tools.utils import coco_eval
-from code.data.build_vocab import Vocabulary
+from code_src.tools.utils import HMS, configurationPATH
+from code_src.config.configuration import Configuration
+from code_src.train import main_train
+from code_src.tools.resize import main_resize_images
+from code_src.data.build_vocab import main_build_vocab
+from code_src.data.KarpathySplit import main_KarpathySplit
+from code_src.tools.utils import coco_eval
+from code_src.data.build_vocab import Vocabulary
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '2,3'
+os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 
 
 def process(cf):
@@ -39,7 +39,7 @@ def main():
     # Get parameters from arguments
     parser = argparse.ArgumentParser(description='Model training')
     parser.add_argument('-c', '--config_path', type=str,
-                        default='/home/wzn/PycharmProjects/Adaptive/code/config/cfg_wzn.py',
+                        default='/home/wzn/PycharmProjects/Adaptive/code_src/config/cfg_wzn.py',
                         help='Configuration file')
     arguments = parser.parse_args()
     assert arguments.config_path is not None, 'Please provide a path using -c config/pathname in the command line'

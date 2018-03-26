@@ -10,7 +10,7 @@ from torchvision import transforms, datasets
 
 from coco.PythonAPI.pycocotools.coco import COCO
 from coco.pycocoevalcap.eval import COCOEvalCap
-from code.models.adaptive import Encoder2Decoder
+from code_src.models.adaptive import Encoder2Decoder
 
 
 
@@ -21,7 +21,7 @@ def to_var(x, volatile=False):
     '''
     if torch.cuda.is_available():
         x = x.cuda()
-    return Variable( x, volatile=volatile )
+    return Variable(x, volatile=volatile )
 
 # Show multiple images and caption words
 def show_images(images, cols = 1, titles = None):

@@ -3,3 +3,5 @@
 3\ beam search.
 4\ train vision.
 5\ loss curve.
+6\ Decoder has no initialization for h0 & c0.
+7\ Check whether bidirectional LSTM identify bideirectional RNN.

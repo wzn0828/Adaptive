@@ -5,9 +5,9 @@ import numpy as np
 import torch
 import torch.nn as nn
 import pickle
-from code.tools.utils import coco_eval, to_var
-from code.data.data_loader import get_loader
-from code.models.adaptive import Encoder2Decoder
+from code_src.tools.utils import coco_eval, to_var
+from code_src.data.data_loader import get_loader
+from code_src.models.adaptive import Encoder2Decoder
 from torchvision import transforms
 from torch.nn.utils.rnn import pack_padded_sequence
 
@@ -95,17 +95,17 @@ def main_train(cf):
         for i, (images, captions, lengths, _, _) in enumerate(data_loader):
 
             # Set mini-batch dataset
-            images = to_var(images)
-            captions = to_var(captions)
-            lengths = [cap_len - 1 for cap_len in lengths]
-            targets = pack_padded_sequence(captions[:, 1:], lengths, batch_first=True)[0]
+            images = to_var(images)     # size of [cf.train_batch_size, 3, 224, 224]
+            captions = to_var(captions)     # size of [cf.train_batch_size, maxlength of current batch]
+            lengths = [cap_len - 1 for cap_len in lengths]     # size of cf.train_batch_size
+            targets = pack_padded_sequence(captions[:, 1:], lengths, batch_first=True)[0]       # size of sum(lengths)
 
             # preparation for train
             adaptive.train()
             adaptive.zero_grad()
 
             # Forward
-            packed_scores = adaptive(images, captions, lengths)
+            packed_scores = adaptive(images, captions, lengths)     # size of packed_scores[0] is [sum(lengths), 10141(vocab_size)]
 
             # Compute loss and backprop
             loss = LMcriterion(packed_scores[0], targets)
