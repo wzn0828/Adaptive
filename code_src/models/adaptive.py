@@ -309,9 +309,12 @@ class Encoder2Decoder(nn.Module):
 
     # Caption generator
     def sampler(self, images, max_len=20):
-        """
+        '''
         Samples captions for given image features (Greedy search).
-        """
+        :param images: size of [cf.eval_batch_size, 3, 224, 224]
+        :param max_len: the max length of output caption
+        :return:
+        '''
 
         # Data parallelism if multiple GPUs
         if torch.cuda.device_count() > 1:
@@ -319,13 +322,14 @@ class Encoder2Decoder(nn.Module):
             encoder_parallel = torch.nn.DataParallel(self.encoder, device_ids=device_ids)
             V, v_g = encoder_parallel(images)
         else:
-            V, v_g = self.encoder(images)
+            V, v_g = self.encoder(images)   # size of V is [cf.eval_batch_size, 49, cf.lstm_hidden_size]
+                                            # size of v_g is [cf.eval_batch_size, cf.lstm_embed_size]
 
         # Build the starting token Variable <start> (index 1): B x 1
         if torch.cuda.is_available():
             captions = Variable(torch.LongTensor(images.size(0), 1).fill_(1).cuda())
         else:
-            captions = Variable(torch.LongTensor(images.size(0), 1).fill_(1))
+            captions = Variable(torch.LongTensor(images.size(0), 1).fill_(1))  # size of captions is temporally [cf.eval_batch_size, 1]
 
         # Get generated caption idx list, attention weights and sentinel score
         sampled_ids = []
@@ -336,9 +340,11 @@ class Encoder2Decoder(nn.Module):
         states = None
 
         for i in range(max_len):
-            scores, states, atten_weights, beta = self.decoder(V, v_g, captions, states)
-            predicted = scores.max(2)[1]  # argmax
-            captions = predicted
+            scores, states, atten_weights, beta = self.decoder(V, v_g, captions, states)    # size of scores is [cf.eval_batch_size, 1(maxlength(captions)), 10141(vocab_size)]
+                                                                                            # size of atten_weights [cf.eval_batch_size, 1, 49]
+                                                                                            # size of beta [cf.eval_batch_size, 1, 1]
+            predicted = scores.max(2)[1]
+            captions = predicted    # size of captions is [cf.eval_batch_size, 1], captions is the index of current output word
 
             # Save sampled word, attention map and sentinel at each timestep
             sampled_ids.append(captions)
