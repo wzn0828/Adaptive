@@ -48,7 +48,7 @@ class Configuration():
         if cf.KarpathySplitOrnot:
             model_description += 'Karpathy_Split'
         if cf.trainOrnot:
-            model_description += 'Train_lr_' + str(cf.adam_learning_rate) + '_cnnlr_' + str(
+            model_description += 'Train_' + cf.atten_model_name + '_lr_' + str(cf.adam_learning_rate) + '_cnnlr_' + str(
                 cf.adam_learning_rate_cnn) + '_cnn_start_layer_' + str(
                 cf.fine_tune_cnn_start_layer) + '_cnn_start_epoch_' + str(cf.fine_tune_cnn_start_epoch)
         if cf.testOrnot:

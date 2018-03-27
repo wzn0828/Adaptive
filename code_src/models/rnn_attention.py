@@ -246,12 +246,12 @@ class Decoder(nn.Module):
 
 # Whole Architecture with Image Encoder and Caption decoder
 class Encoder2Decoder(nn.Module):
-    def __init__(self, embed_size, vocab_size, hidden_size, cf):    # size of vocab_size is 10141
+    def __init__(self, cf):    # size of vocab_size is 10141
         super(Encoder2Decoder, self).__init__()
 
         # Image CNN encoder and Adaptive Attention Decoder
-        self.encoder = AttentiveCNN(embed_size, hidden_size)
-        self.decoder = Decoder(embed_size, vocab_size, hidden_size, cf)
+        self.encoder = AttentiveCNN(cf.rnn_attention_embed_size, cf.rnn_attention_hiddensize)
+        self.decoder = Decoder(cf.rnn_attention_embed_size, cf.vocab_length, cf.rnn_attention_hiddensize, cf)
 
     def forward(self, images, captions, lengths):
         '''

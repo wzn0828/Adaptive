@@ -7,7 +7,7 @@ import torch.nn as nn
 import pickle
 from code_src.tools.utils import coco_eval, to_var
 from code_src.data.data_loader import get_loader
-from code_src.models.adaptive import Encoder2Decoder
+import code_src.models as atten_models
 from torchvision import transforms
 from torch.nn.utils.rnn import pack_padded_sequence
 
@@ -36,30 +36,18 @@ def main_train(cf):
     with open(cf.vocab_path, 'rb') as f:
         vocab = pickle.load(f)
 
+    cf.vocab_length = len(vocab)
+
     # Build training data loader
     data_loader = get_loader(cf.resized_image_dir, cf.train_anno_path, vocab,
                              transform, cf.train_batch_size,
                              shuffle=True, num_workers=cf.dataloader_num_workers)
 
     # build model
-    adaptive = Encoder2Decoder(cf.lstm_embed_size, len(vocab), cf.lstm_hidden_size)
-
-    # Load pretrained model or build from scratch
-    if cf.train_pretrained:
-        adaptive.load_state_dict(torch.load(cf.train_pretrained_model))
-        # Get starting epoch #, note that model is named as '...your path to model/algoname-epoch#.pkl'
-        # A little messy here.
-        start_epoch = int(cf.train_pretrained_model.split('/')[-1].split('-')[1].split('.')[0]) + 1
-
-    else:
-        start_epoch = 1
+    adaptive, start_epoch, params = get_model(cf)
 
     # Constructing CNN parameters for optimization, only fine-tuning higher layers
     cnn_optimizer = get_cnn_optimizer(adaptive, cf)
-
-    # Other parameter optimization
-    params = list(adaptive.encoder.affine_a.parameters()) + list(adaptive.encoder.affine_b.parameters()) \
-             + list(adaptive.decoder.parameters())
 
     # Will decay later    
     learning_rate = cf.adam_learning_rate
@@ -152,6 +140,31 @@ def main_train(cf):
             break
 
     print('Model of best epoch #: %d with CIDEr score %.2f' % (best_epoch, best_cider))
+
+
+def get_model(cf):
+    # build model
+    if cf.atten_model_name == 'adaptive':
+        adaptive = atten_models.adaptive.Encoder2Decoder(cf.lstm_embed_size, cf.vocab_length, cf.lstm_hidden_size)
+    elif cf.atten_model_name == 'rnn_attention':
+        adaptive = atten_models.rnn_attention.Encoder2Decoder(cf)
+
+    # load pretrained model or not, and get start_epoch
+    if cf.train_pretrained:
+        adaptive.load_state_dict(torch.load(cf.train_pretrained_model))
+        # Get starting epoch #, note that model is named as '...your path to model/algoname-epoch#.pkl'
+        # A little messy here.
+        start_epoch = int(cf.train_pretrained_model.split('/')[-1].split('-')[1].split('.')[0]) + 1
+    else:
+        start_epoch = 1
+
+    # Other parameter optimization
+    params = list(adaptive.encoder.affine_a.parameters()) + list(adaptive.encoder.affine_b.parameters()) \
+             + list(adaptive.decoder.parameters())
+
+    return adaptive, start_epoch, params
+
+
 
 
 def get_optimizer(cf, learning_rate, params):

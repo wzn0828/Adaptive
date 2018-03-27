@@ -10,6 +10,9 @@ train_anno_path             = 'code_src/data/annotations/karpathy_split_train.js
 val_anno_path               = 'code_src/data/annotations/karpathy_split_val.json'    # path for validation annotation json file
 test_anno_path              = 'code_src/data/annotations/karpathy_split_test.json'   # path for test annotation json file
 
+#--------------------attention_model--------------------#
+atten_model_name            = 'adaptive'    # ['adaptive','rnn_attention']
+
 #--------------------train--------------------#
 trainOrnot                  = False
 train_crop_size             = 224        # size for randomly cropping images
@@ -65,5 +68,6 @@ num_test                    = 5000
 
 #--------------------rnn_attention--------------------#
 rnn_attention_bidirectional = True                                      # whether use bidirection in lstm structure of rnn_attention
+rnn_attention_embed_size    = lstm_embed_size
 rnn_attention_hiddensize    = lstm_hidden_size
 rnn_attention_numlayers     = 2
