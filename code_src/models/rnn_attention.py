@@ -59,35 +59,36 @@ class AttentiveCNN(nn.Module):
 
 # Attention Block for C_hat and attention value calculation
 class Atten(nn.Module):
-    def __init__(self, hidden_size):
+    def __init__(self, hidden_size, cf):
         super(Atten, self).__init__()
 
         self.affine_v = nn.Linear(hidden_size, 49, bias=False)  # W_v
         self.affine_g = nn.Linear(hidden_size, 49, bias=False)  # W_g
-        self.affine_s = nn.Linear(hidden_size, 49, bias=False)  # W_s
         self.affine_h = nn.Linear(49, 1, bias=False)  # w_h
 
         self.dropout = nn.Dropout(0.5)
         self.init_weights()
+
+        self.rnn_attention_hiddensize = cf.rnn_attention_hiddensize//2 if cf.rnn_attention_bidirectional==True else cf.rnn_attention_hiddensize
+        self.lstm = nn.LSTM(hidden_size, self.rnn_attention_hiddensize, cf.rnn_attention_numlayers, batch_first=True, bidirectional=cf.rnn_attention_bidirectional)
 
     def init_weights(self):
         """Initialize the weights."""
         init.xavier_uniform(self.affine_v.weight)
         init.xavier_uniform(self.affine_g.weight)
         init.xavier_uniform(self.affine_h.weight)
-        init.xavier_uniform(self.affine_s.weight)
 
-    def forward(self, V, h_t, s_t):
+
+    def forward(self, V, h_t):
         '''
         :param V: V=[v_1, v_2, ... v_k], size of [cf.train_batch_size, 49, cf.lstm_hidden_size]
         :param h_t: h_t from LSTM, size of h_t is [cf.train_batch_size, maxlength(captions), cf.lstm_hidden_size]
-        :param s_t: s_t from LSTM, size of s_t is [cf.train_batch_size, maxlength(captions), cf.lstm_hidden_size]
-        :return: c_hat_t, attention feature map
+        :return: F_T, size of [cf.train_batch_size, maxlength(captions), cf.rnn_attention_hiddensize]; Attention, size of [cf.train_batch_size, maxlength(captions),49]
         '''
 
         # W_v * V + W_g * h_t * 1^T
         content_v = self.affine_v(self.dropout(V)).unsqueeze(1) \
-                    + self.affine_g(self.dropout(h_t)).unsqueeze(2)     # size of [cf.train_batch_size, maxlength(captions), 49,49]
+                    + self.affine_g(self.dropout(h_t)).unsqueeze(2)     # size of [cf.train_batch_size, maxlength(captions), 49, 49]
 
         # z_t = W_h * tanh( content_v )
         z_t = self.affine_h(self.dropout(F.tanh(content_v))).squeeze(3)      # size of [cf.train_batch_size, maxlength(captions), 49]
@@ -101,43 +102,25 @@ class Atten(nn.Module):
         alpha_t = alpha_t.unsqueeze(3)  # size of [cf.train_batch_size, maxlength(captions), 49, 1]
         V_weighted = alpha_t*V       # size of [cf.train_batch_size, maxlength(captions), 49, cf.lstm_hidden_size]
 
+        # lstm initialize, temporarily zero
+        # use lstm to integrate weighted feature V_weighted
+        output_h_t, _ = self.lstm(V_weighted.view(-1, V_weighted.size(2), V_weighted.size(3)), None)    # size of output_h_t is [-1,V_weighted.size(2),cf.rnn_attention_hiddensize]
+        # extract the last hidden output
+        F_T = output_h_t[:, -1, :].view(V_weighted.size(0), V_weighted.size(1), output_h_t.size(2))       # size of [cf.train_batch_size, maxlength(captions), cf.rnn_attention_hiddensize]
 
-        
-
-
-
-
-
-        # Construct c_t: B x seq x hidden_size
-        c_t = torch.bmm(alpha_t, V).squeeze(2)      # size of [cf.train_batch_size, maxlength(captions), cf.lstm_hidden_size]
-
-        # W_s * s_t + W_g * h_t
-        content_s = self.affine_s(self.dropout(s_t)) + self.affine_g(self.dropout(h_t))     # size of [cf.train_batch_size, maxlength(captions), 49]
-        # w_t * tanh( content_s )
-        z_t_extended = self.affine_h(self.dropout(F.tanh(content_s)))       # size of [cf.train_batch_size, maxlength(captions), 1]
-
-        # Attention score between sentinel and image content
-        extended = torch.cat((z_t, z_t_extended), dim=2)         # size of [cf.train_batch_size, maxlength(captions), 50]
-        alpha_hat_t = F.softmax(extended.view(-1, extended.size(2))).view(extended.size(0), extended.size(1), -1)   # size of [cf.train_batch_size, maxlength(captions), 50]
-        beta_t = alpha_hat_t[:, :, -1]      # size of [cf.train_batch_size, maxlength(captions)]
-
-        # c_hat_t = beta * s_t + ( 1 - beta ) * c_t
-        beta_t = beta_t.unsqueeze(2)        # size of [cf.train_batch_size, maxlength(captions), 1]
-        c_hat_t = beta_t * s_t + (1 - beta_t) * c_t     # size of [cf.train_batch_size, maxlength(captions), 512]
-
-        return c_hat_t, alpha_t, beta_t
+        return F_T, alpha_t.squeeze(3)
 
 
 # Adaptive Attention Block: C_t, Spatial Attention Weights, Sentinel embedding
 class AdaptiveBlock(nn.Module):
-    def __init__(self, embed_size, hidden_size, vocab_size):
+    def __init__(self, embed_size, hidden_size, vocab_size, cf):
         super(AdaptiveBlock, self).__init__()
 
         # # Sentinel block
         # self.sentinel = Sentinel(embed_size * 2, hidden_size)
 
         # Image Spatial Attention Block
-        self.atten = Atten(hidden_size)
+        self.atten = Atten(hidden_size, cf)
 
         # Final Caption generator
         self.mlp = nn.Linear(hidden_size, vocab_size)
@@ -160,26 +143,26 @@ class AdaptiveBlock(nn.Module):
         # hiddens' size is [cf.train_batch_size, maxlength(captions), cf.lstm_hidden_size]
         # cells' size is [cf.train_batch_size, maxlength(captions), cf.lstm_hidden_size]
 
-        # hidden for sentinel should be h0-ht-1
-        h0 = self.init_hidden(x.size(0))[0].transpose(0, 1)     # size of [cf.train_batch_size, 1, cf.lstm_hidden_size]
+        # # hidden for sentinel should be h0-ht-1
+        # h0 = self.init_hidden(x.size(0))[0].transpose(0, 1)     # size of [cf.train_batch_size, 1, cf.lstm_hidden_size]
 
-        # h_(t-1): B x seq x hidden_size ( 0 - t-1 )
-        if hiddens.size(1) > 1:
-            hiddens_t_1 = torch.cat((h0, hiddens[:, :-1, :]), dim=1)    # size of [cf.train_batch_size, maxlength(captions), cf.lstm_hidden_size]
-        else:
-            hiddens_t_1 = h0
+        # # h_(t-1): B x seq x hidden_size ( 0 - t-1 )
+        # if hiddens.size(1) > 1:
+        #     hiddens_t_1 = torch.cat((h0, hiddens[:, :-1, :]), dim=1)    # size of [cf.train_batch_size, maxlength(captions), cf.lstm_hidden_size]
+        # else:
+        #     hiddens_t_1 = h0
 
         # # Get Sentinel embedding, it's calculated blockly
         # sentinel = self.sentinel(x, hiddens_t_1, cells)     # size of [cf.train_batch_size, maxlength(captions), cf.lstm_hidden_size]
 
         # Get C_t, Spatial attention, sentinel score
-        c_hat, atten_weights, beta = self.atten(V, hiddens, sentinel)   # size of c_hat is [cf.train_batch_size, maxlength(captions), cf.lstm_hidden_size]
-                                                                        # size of atten_weights [cf.train_batch_size, maxlength(captions), 49]
-                                                                        # size of beta [cf.train_batch_size, maxlength(captions), 1]
-        # Final score along vocabulary
-        scores = self.mlp(self.dropout(c_hat + hiddens))    # size of scores is [cf.train_batch_size, maxlength(captions), 10141(vocab_size)]
+        F_T, atten_weights = self.atten(V, hiddens)   # size of F_T is [cf.train_batch_size, maxlength(captions), cf.rnn_attention_hiddensize]
+                                                      # size of atten_weights is [cf.train_batch_size, maxlength(captions),49]
 
-        return scores, atten_weights, beta
+        # Final score along vocabulary
+        scores = self.mlp(self.dropout(F_T + hiddens))    # size of scores is [cf.train_batch_size, maxlength(captions), 10141(vocab_size)]
+
+        return scores, atten_weights
 
     def init_hidden(self, bsz):
         '''
@@ -198,7 +181,7 @@ class AdaptiveBlock(nn.Module):
 
 # Caption Decoder
 class Decoder(nn.Module):
-    def __init__(self, embed_size, vocab_size, hidden_size):
+    def __init__(self, embed_size, vocab_size, hidden_size, cf):
         super(Decoder, self).__init__()
 
         # word embedding
@@ -211,7 +194,7 @@ class Decoder(nn.Module):
         self.hidden_size = hidden_size
 
         # Adaptive Attention Block: Sentinel + C_hat + Final scores for caption sampling
-        self.adaptive = AdaptiveBlock(embed_size, hidden_size, vocab_size)
+        self.adaptive = AdaptiveBlock(embed_size, hidden_size, vocab_size, cf)
 
     def forward(self, V, v_g, captions, states=None):
 
@@ -253,22 +236,22 @@ class Decoder(nn.Module):
             device_ids = range(torch.cuda.device_count())
             adaptive_block_parallel = nn.DataParallel(self.adaptive, device_ids=device_ids)
 
-            scores, atten_weights, beta = adaptive_block_parallel(x, hiddens, cells, V)
+            scores, atten_weights = adaptive_block_parallel(x, hiddens, cells, V)
         else:
-            scores, atten_weights, beta = self.adaptive(x, hiddens, cells, V)
+            scores, atten_weights = self.adaptive(x, hiddens, cells, V)
 
         # Return states for Caption Sampling purpose
-        return scores, states, atten_weights, beta
+        return scores, states, atten_weights
 
 
 # Whole Architecture with Image Encoder and Caption decoder
 class Encoder2Decoder(nn.Module):
-    def __init__(self, embed_size, vocab_size, hidden_size):    # size of vocab_size is 10141
+    def __init__(self, embed_size, vocab_size, hidden_size, cf):    # size of vocab_size is 10141
         super(Encoder2Decoder, self).__init__()
 
         # Image CNN encoder and Adaptive Attention Decoder
         self.encoder = AttentiveCNN(embed_size, hidden_size)
-        self.decoder = Decoder(embed_size, vocab_size, hidden_size)
+        self.decoder = Decoder(embed_size, vocab_size, hidden_size, cf)
 
     def forward(self, images, captions, lengths):
         '''
@@ -288,7 +271,7 @@ class Encoder2Decoder(nn.Module):
             V, v_g = self.encoder(images)   # size of V is [cf.train_batch_size, 49, 512], v_g's is [cf.train_batch_size, 256]
 
         # Language Modeling on word prediction
-        scores, _, _, _ = self.decoder(V, v_g, captions)    # size of scores is [cf.train_batch_size, 18, 10141(vocab_size)]
+        scores, _, _ = self.decoder(V, v_g, captions)    # size of scores is [cf.train_batch_size, 18, 10141(vocab_size)]
 
         # Pack it to make criterion calculation more efficient
         packed_scores = pack_padded_sequence(scores, lengths, batch_first=True) # size of packed_scores.data is [sum(lengths), 10141]

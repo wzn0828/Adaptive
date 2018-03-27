@@ -62,3 +62,8 @@ num_val                     = 5000
 num_test                    = 5000
 
 
+
+#--------------------rnn_attention--------------------#
+rnn_attention_bidirectional = True                                      # whether use bidirection in lstm structure of rnn_attention
+rnn_attention_hiddensize    = lstm_hidden_size
+rnn_attention_numlayers     = 2
