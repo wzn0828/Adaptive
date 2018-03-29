@@ -14,21 +14,21 @@ test_anno_path              = 'code_src/data/annotations/karpathy_split_test.jso
 atten_model_name            = 'adaptive'    # ['adaptive','rnn_attention']
 
 #--------------------train--------------------#
-trainOrnot                  = False
+trainOrnot                  = True
 train_crop_size             = 224        # size for randomly cropping images
 train_log_step              = 10                                                 # step size for printing log info
 train_random_seed           = 123                                                # random seed for model reproduction
 train_pretrained            = True         # use train_pretrained_model or not
 train_pretrained_model      = 'Experiments/Train_lr_0.0005_cnnlr_1e-05_cnn_start_layer_5_cnn_start_epoch_20___2018-03-15-19-55-18/trained_models/adaptive-33.pkl'      # [''|'path'] path of used model'] start from checkpoint or scratch, '' represents start from scratch
 train_num_epochs            = 50                                        # the maximum epochs
-train_batch_size            = 50                                        # on cluster setup, 60 each x 4 for Huckle server
+train_batch_size            = 20                                        # on cluster setup, 60 each x 4 for Huckle server
 train_clip                  = 0.1                                       # Gradient clipping for gradient exploding problem in LSTM
 train_lr_decay              = 20                                        # epoch at which to start lr decay
 train_lr_decay_every        = 50                                        # decay learning rate at every this number
 train_early_stop            = False
 
 #--------------------test--------------------#
-testOrnot                   = True
+testOrnot                   = False
 test_pretrained_model       = 'Experiments/2018-3-10/models/adaptive-12.pkl'      # used pretrained model parameters in test
 
 #--------------------hyper parameters--------------------#

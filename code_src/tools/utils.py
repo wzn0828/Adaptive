@@ -11,7 +11,7 @@ from torchvision import transforms, datasets
 from coco.PythonAPI.pycocotools.coco import COCO
 from coco.pycocoevalcap.eval import COCOEvalCap
 from code_src.models.adaptive import Encoder2Decoder
-
+import code_src.models as atten_models
 
 
 # Variable wrapper
@@ -110,14 +110,11 @@ def coco_eval(cf, model = None, epoch=0, test_mode = False):
     with open(cf.vocab_path, 'rb') as f:
          vocab = pickle.load(f)
 
+    cf.vocab_length = len(vocab)
+
     # load parameters dict of model for test
     if test_mode:
-        # build model
-        model = Encoder2Decoder(cf.lstm_embed_size, len(vocab), cf.lstm_hidden_size)
-        model.load_state_dict(torch.load(cf.test_pretrained_model))
-        # Change to GPU mode if available
-        if torch.cuda.is_available():
-            model.cuda()
+        model = get_test_model(cf)
 
     model.eval()
 
@@ -148,7 +145,7 @@ def coco_eval(cf, model = None, epoch=0, test_mode = False):
     for i, (images, image_ids, _) in enumerate(data_loader):
         
         images = to_var(images)
-        generated_captions, _, _ = model.sampler(images)
+        generated_captions = model.sampler(images)[0]
         
         if torch.cuda.is_available():
             captions = generated_captions.cpu().data.numpy()
@@ -214,6 +211,23 @@ def coco_eval(cf, model = None, epoch=0, test_mode = False):
             cider = score
             
     return cider
+
+
+
+def get_test_model(cf):
+    # build model
+    if cf.atten_model_name == 'adaptive':
+        adaptive = atten_models.adaptive.Encoder2Decoder(cf.lstm_embed_size, cf.vocab_length, cf.lstm_hidden_size)
+    elif cf.atten_model_name == 'rnn_attention':
+        adaptive = atten_models.rnn_attention.Encoder2Decoder(cf)
+
+    # load pretrained model
+    adaptive.load_state_dict(torch.load(cf.test_pretrained_model))
+    # Change to GPU mode if available
+    if torch.cuda.is_available():
+        adaptive.cuda()
+
+    return adaptive
 
 
 def HMS(sec):
