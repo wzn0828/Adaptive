@@ -11,14 +11,14 @@ val_anno_path               = 'code_src/data/annotations/karpathy_split_val.json
 test_anno_path              = 'code_src/data/annotations/karpathy_split_test.json'   # path for test annotation json file
 
 #--------------------attention_model--------------------#
-atten_model_name            = 'adaptive'    # ['adaptive','rnn_attention']
+atten_model_name            = 'rnn_attention'    # ['adaptive','rnn_attention']
 
 #--------------------train--------------------#
 trainOrnot                  = True
 train_crop_size             = 224        # size for randomly cropping images
 train_log_step              = 10                                                 # step size for printing log info
 train_random_seed           = 123                                                # random seed for model reproduction
-train_pretrained            = True         # use train_pretrained_model or not
+train_pretrained            = False         # use train_pretrained_model or not
 train_pretrained_model      = 'Experiments/Train_lr_0.0005_cnnlr_1e-05_cnn_start_layer_5_cnn_start_epoch_20___2018-03-15-19-55-18/trained_models/adaptive-33.pkl'      # [''|'path'] path of used model'] start from checkpoint or scratch, '' represents start from scratch
 train_num_epochs            = 50                                        # the maximum epochs
 train_batch_size            = 20                                        # on cluster setup, 60 each x 4 for Huckle server
