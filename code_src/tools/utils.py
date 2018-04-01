@@ -1,6 +1,7 @@
 import json
 import os
 import pickle
+import string
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -12,6 +13,7 @@ from coco.PythonAPI.pycocotools.coco import COCO
 from coco.pycocoevalcap.eval import COCOEvalCap
 from code_src.models.adaptive import Encoder2Decoder
 import code_src.models as atten_models
+from code_src.data.data_loader import get_loader
 
 
 # Variable wrapper
@@ -65,7 +67,7 @@ def show_images(images, cols = 1, titles = None):
 # MS COCO evaluation data loader
 class CocoEvalLoader( datasets.ImageFolder ):
 
-    def __init__( self, root, ann_path, transform=None, target_transform=None, 
+    def __init__( self, root, ann_path, vocab, transform=None, target_transform=None,
                  loader=datasets.folder.default_loader ):
         '''
         Customized COCO loader to get Image ids and Image Filenames
@@ -76,25 +78,47 @@ class CocoEvalLoader( datasets.ImageFolder ):
         self.transform = transform
         self.target_transform = target_transform
         self.loader = loader
-        self.imgs = json.load( open( ann_path, 'r' ) )['images']
-
+        self.ann_path = ann_path
+        self.coco = COCO(ann_path)
+        self.ids = list(self.coco.anns.keys())
+        self.vocab = vocab
+        self.imgs = json.load(open(ann_path, 'r'))['images']
 
     def __getitem__(self, index):
 
-        filename = self.imgs[ index ]['file_name']
-        img_id = self.imgs[ index ]['id']
+        coco = self.coco
+        vocab = self.vocab
+        ann_id = self.ids[index]
+        caption = coco.anns[ann_id]['caption']
+        img_id = coco.anns[ann_id]['image_id']
+        filename = coco.loadImgs(img_id)[0]['file_name']
+
+        # filename = self.imgs[index]['file_name']
+        # img_id = self.imgs[index]['id']
         
         # Filename for the image
         if 'val' in filename.lower():
-            path = os.path.join( self.root, 'val2014' , filename )
+            path = os.path.join(self.root, 'val2014' , filename)
         else:
-            path = os.path.join( self.root, 'train2014', filename )
+            path = os.path.join(self.root, 'train2014', filename)
 
-        img = self.loader( path )
+        img = self.loader(path)
         if self.transform is not None:
-            img = self.transform( img )
+            img = self.transform(img)
 
-        return img, img_id, filename
+        # Convert caption (string) to word ids.
+        translator = str.maketrans('', '', string.punctuation)
+        tokens = str(caption).lower().translate(translator).strip().split()
+        caption = []
+        caption.append(vocab('<start>'))
+        caption.extend([vocab(token) for token in tokens])
+        caption.append(vocab('<end>'))
+        target = torch.Tensor(caption)
+
+        return img, target, img_id, filename
+
+    def __len__(self):
+        return len(self.ids)
 
 # MSCOCO Evaluation function on validation or test dataset
 def coco_eval(cf, model = None, epoch=0, test_mode = False):
@@ -129,12 +153,14 @@ def coco_eval(cf, model = None, epoch=0, test_mode = False):
     ann_path = cf.val_anno_path
     if test_mode:
         ann_path = cf.test_anno_path
-    data_loader = torch.utils.data.DataLoader(
-        CocoEvalLoader(cf.resized_image_dir, ann_path, transform),
-        batch_size=cf.eval_batch_size,
-        shuffle=False, num_workers=cf.dataloader_num_workers,
-        drop_last=False)
-    
+    data_loader = get_loader(cf.resized_image_dir, ann_path, vocab, transform, cf.eval_batch_size, shuffle=False, num_workers=cf.dataloader_num_workers)
+
+    # data_loader = torch.utils.data.DataLoader(
+    #     CocoEvalLoader(cf.resized_image_dir, ann_path, vocab, transform),
+    #     batch_size=cf.eval_batch_size,
+    #     shuffle=False, num_workers=cf.dataloader_num_workers,
+    #     drop_last=False)
+
     # Generated captions to be compared with GT
     results = []
     print_string = '---------------------Start evaluation on MS-COCO dataset-----------------------'

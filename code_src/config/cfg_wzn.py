@@ -11,10 +11,10 @@ val_anno_path               = 'code_src/data/annotations/karpathy_split_val.json
 test_anno_path              = 'code_src/data/annotations/karpathy_split_test.json'   # path for test annotation json file
 
 #--------------------attention_model--------------------#
-atten_model_name            = 'rnn_attention'    # ['adaptive','rnn_attention']
+atten_model_name            = 'adaptive'    # ['adaptive','rnn_attention']
 
 #--------------------train--------------------#
-trainOrnot                  = True
+trainOrnot                  = False
 train_crop_size             = 224        # size for randomly cropping images
 train_log_step              = 10                                                 # step size for printing log info
 train_random_seed           = 123                                                # random seed for model reproduction
@@ -28,7 +28,7 @@ train_lr_decay_every        = 50                                        # decay 
 train_early_stop            = False
 
 #--------------------test--------------------#
-testOrnot                   = False
+testOrnot                   = True
 test_pretrained_model       = 'Experiments/2018-3-10/models/adaptive-12.pkl'      # used pretrained model parameters in test
 
 #--------------------hyper parameters--------------------#
@@ -43,8 +43,8 @@ adam_learning_rate          = 5e-5                                      # learni
 adam_learning_rate_cnn      = 1e-5                                      # learning rate for fine-tuning CNN
 
 # LSTM hyper parameters
-lstm_embed_size             = 3                                       # dimension of word embedding vectors, also dimension of v_g
-lstm_hidden_size            = 6                                       # dimension of lstm hidden states
+lstm_embed_size             = 256                                       # dimension of word embedding vectors, also dimension of v_g
+lstm_hidden_size            = 512                                       # dimension of lstm hidden states
 
 # For eval_size > 30, it will cause cuda OOM error on Huckleberry
 eval_batch_size             = 3                                       # on cluster setup, 30 each x 4

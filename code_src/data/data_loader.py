@@ -55,7 +55,7 @@ class CocoDataset(data.Dataset):
         return image, target, img_id, filename
 
     def __len__(self):
-        return len( self.ids )
+        return len(self.ids)
 
 
 def collate_fn(data):
