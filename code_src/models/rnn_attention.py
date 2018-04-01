@@ -104,9 +104,15 @@ class Atten(nn.Module):
 
         # lstm initialize, temporarily zero
         # use lstm to integrate weighted feature V_weighted
-        output_h_t, _ = self.lstm(V_weighted.view(-1, V_weighted.size(2), V_weighted.size(3)), None)    # size of output_h_t is [-1,V_weighted.size(2),cf.rnn_attention_hiddensize]
+        output_h_t, h_c = self.lstm(V_weighted.view(-1, V_weighted.size(2), V_weighted.size(3)), None)    # size of output_h_t is [-1,V_weighted.size(2),cf.rnn_attention_hiddensize]
         # extract the last hidden output
-        F_T = output_h_t[:, -1, :].view(V_weighted.size(0), V_weighted.size(1), output_h_t.size(2))       # size of [cf.train_batch_size, maxlength(captions), cf.rnn_attention_hiddensize]
+        h_T = h_c[0]    # size of h_T is [num_layers * num_directions, -1, self.rnn_attention_hiddensize]
+        h_T = torch.cat((h_T[-1, :, :], h_T[-2, :, :]), 1)  # size of h_T is [-1, 2*self.rnn_attention_hiddensize]
+
+        if self.lstm.bidirectional:
+            F_T = h_T.view(V_weighted.size(0), V_weighted.size(1), -1)  # size of [cf.train_batch_size, maxlength(captions), cf.rnn_attention_hiddensize]
+        else:
+            F_T = output_h_t[:, -1, :].view(V_weighted.size(0), V_weighted.size(1), output_h_t.size(2))       # size of [cf.train_batch_size, maxlength(captions), cf.rnn_attention_hiddensize]
 
         return F_T, alpha_t.squeeze(3)
 

@@ -4,7 +4,9 @@
 4\ train vision.
 5\ loss curve.
 6\ Decoder has no initialization for h0 & c0.
-7\ Check whether bidirectional LSTM identify bideirectional RNN.
+7\ Check whether bidirectional LSTM identify bideirectional RNN: no;
 8\ initialization for the lstm of rnn_attention is zero.
-9\ check the last hidden output of bidirectional lstm is or not the concatination of two hidden_T.
+9\ check the last hidden output of bidirectional lstm is or not the concatination of two hidden_T: Checked, the result is not, but has modified.
 10\ the calculation for output yt may be too simple.
+11\ lstm clip choice.
+12\ lstm add batchnorm or not.
