@@ -6,6 +6,7 @@ import string
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
+import torch.nn as nn
 from torch.autograd import Variable
 from torchvision import transforms, datasets
 
@@ -14,6 +15,7 @@ from coco.pycocoevalcap.eval import COCOEvalCap
 from code_src.models.adaptive import Encoder2Decoder
 import code_src.models as atten_models
 from code_src.data.data_loader import get_loader
+from torch.nn.utils.rnn import pack_padded_sequence
 
 
 # Variable wrapper
@@ -168,10 +170,20 @@ def coco_eval(cf, model = None, epoch=0, test_mode = False):
         print_string = '---------------------Start test on MS-COCO dataset-----------------------'
     print(print_string)
 
+    # Language Modeling Loss
+    LMcriterion = nn.CrossEntropyLoss()
+
     for i, (images, targets, lengths, img_ids, filenames) in enumerate(data_loader):
         
         images = to_var(images)
-        generated_captions = model.sampler(images)[0]
+        lengths = [cap_len - 1 for cap_len in lengths]  # size of cf.train_batch_size
+        targets = pack_padded_sequence(captions[:, 1:], lengths, batch_first=True)[0]  # size of sum(lengths)
+
+        sampler_output = model.sampler(images)
+        generated_captions = sampler_output[0]
+        packed_scores = sampler_output[-1]
+
+        loss = LMcriterion(packed_scores[0], targets)
         
         if torch.cuda.is_available():
             captions = generated_captions.cpu().data.numpy()
@@ -194,7 +206,7 @@ def coco_eval(cf, model = None, epoch=0, test_mode = False):
             
             sentence = ' '.join(sampled_caption)
             
-            temp = {'image_id': int(image_ids[image_idx]), 'caption': sentence}
+            temp = {'image_id': int(img_ids[image_idx]), 'caption': sentence}
             results.append(temp)
         
         # Disp evaluation process
