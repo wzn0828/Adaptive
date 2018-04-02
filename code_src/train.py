@@ -5,6 +5,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import pickle
+import matplotlib.pyplot as plt
 from code_src.tools.utils import coco_eval, to_var
 from code_src.data.data_loader import get_loader
 import code_src.models as atten_models
@@ -68,7 +69,9 @@ def main_train(cf):
     best_cider = 0.0
     best_epoch = 0
 
-    # Start Training 
+    train_losses = []
+    valid_losses = []
+    # Start Training
     for epoch in range(start_epoch, cf.train_num_epochs + 1):
 
         # Start Learning Rate Decay
@@ -80,6 +83,7 @@ def main_train(cf):
         # Language Modeling Training
         print('------------------Training for Epoch %d----------------' % (epoch))
 
+        train_batch_losses = []
         for i, (images, captions, lengths, _, _) in enumerate(data_loader):
 
             # Set mini-batch dataset
@@ -97,6 +101,7 @@ def main_train(cf):
 
             # Compute loss and backprop
             loss = LMcriterion(packed_scores[0], targets)
+            train_batch_losses.append(loss.data[0])
             loss.backward()
 
             # Gradient clipping for gradient exploding problem in LSTM
@@ -123,8 +128,17 @@ def main_train(cf):
                    os.path.join(cf.trained_model_path,
                                 'adaptive-%d.pkl' % (epoch)))
 
+        train_loss = np.array(train_batch_losses).mean()
+        print('Train Loss', epoch, train_loss)
+        train_losses.append(train_loss)
+
         # Evaluation on validation set
-        cider = coco_eval(cf, model=adaptive, epoch=epoch)
+        cider, valid_loss = coco_eval(cf, model=adaptive, epoch=epoch)
+        valid_losses.append(valid_loss)
+
+        # plot figure losses
+        figure_loss(cf, epoch, train_losses, valid_losses)
+
         cider_scores.append(cider)
         print('#---printing cider_scores---#')
         print(cider_scores)
@@ -163,8 +177,6 @@ def get_model(cf):
              + list(adaptive.decoder.parameters())
 
     return adaptive, start_epoch, params
-
-
 
 
 def get_optimizer(cf, learning_rate, params):
@@ -224,3 +236,22 @@ def early_stop_Ornot(cf, cider_scores, best_cider):
             flag = True
 
     return flag
+
+
+def figure_loss(cf, epoch, train_losses, valid_losses):
+    if epoch > 0 and epoch % cf.figure_epoch == 0:
+        print('---> Train losses:')
+        print(train_losses)
+        print('---> Valid losses:')
+        print(valid_losses)
+        # losses figure
+        plt.figure()
+        plt.title('Losses')
+        plt.xlabel('steps')
+        plt.ylabel('losses')
+        p1 = plt.plot(train_losses, color='b')
+        p2 = plt.plot(valid_losses, color='r')
+        plt.legend((p1[0], p2[0]), ('trainLosses', 'validLosses'))
+        figure_name = 'loss_figure_' + str(epoch) + '.jpg'
+        figure_path = os.path.join(cf.exp_dir, figure_name)
+        plt.savefig(figure_path)

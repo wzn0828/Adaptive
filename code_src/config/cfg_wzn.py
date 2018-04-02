@@ -26,6 +26,7 @@ train_clip                  = 0.1                                       # Gradie
 train_lr_decay              = 20                                        # epoch at which to start lr decay
 train_lr_decay_every        = 50                                        # decay learning rate at every this number
 train_early_stop            = False
+train_figure_epoch          = 1
 
 #--------------------test--------------------#
 testOrnot                   = True

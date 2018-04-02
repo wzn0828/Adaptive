@@ -173,6 +173,7 @@ def coco_eval(cf, model = None, epoch=0, test_mode = False):
     # Language Modeling Loss
     LMcriterion = nn.CrossEntropyLoss()
 
+    valid_batch_losses = []
     for i, (images, targets, lengths, img_ids, filenames) in enumerate(data_loader):
         
         images = to_var(images)
@@ -184,6 +185,7 @@ def coco_eval(cf, model = None, epoch=0, test_mode = False):
         packed_scores = sampler_output[-1]
 
         loss = LMcriterion(packed_scores[0], targets)
+        valid_batch_losses.append(loss.data[0])
         
         if torch.cuda.is_available():
             captions = generated_captions.cpu().data.numpy()
@@ -212,6 +214,13 @@ def coco_eval(cf, model = None, epoch=0, test_mode = False):
         # Disp evaluation process
         if (i+1) % 10 == 0:
             print('[%d/%d]' % ((i + 1), len(data_loader)))
+
+    # print loss
+    valid_loss = np.array(valid_batch_losses).mean()
+    if test_mode:
+        print('Test Loss on', cf.test_pretrained_model, valid_loss)
+    else:
+        print('Valid Loss on epoch', epoch, valid_loss)
 
     print('------------------------Caption Generated-------------------------------------')
 
@@ -248,7 +257,7 @@ def coco_eval(cf, model = None, epoch=0, test_mode = False):
         if metric == 'CIDEr':
             cider = score
             
-    return cider
+    return cider, valid_loss
 
 
 
