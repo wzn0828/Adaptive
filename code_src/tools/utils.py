@@ -168,7 +168,7 @@ def coco_eval(cf, model = None, epoch=0, test_mode = False):
         print_string = '---------------------Start test on MS-COCO dataset-----------------------'
     print(print_string)
 
-    for i, (images, image_ids, _) in enumerate(data_loader):
+    for i, (images, targets, lengths, img_ids, filenames) in enumerate(data_loader):
         
         images = to_var(images)
         generated_captions = model.sampler(images)[0]
