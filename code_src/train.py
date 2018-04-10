@@ -101,7 +101,7 @@ def main_train(cf):
 
             # Compute loss and backprop
             loss = LMcriterion(packed_scores[0], targets)
-            train_batch_losses.append(loss.data[0])
+            train_batch_losses.append(loss)
             loss.backward()
 
             # Gradient clipping for gradient exploding problem in LSTM
@@ -119,9 +119,9 @@ def main_train(cf):
                 print('Epoch [%d/%d], Step [%d/%d], CrossEntropy Loss: %.4f, Perplexity: %5.4f' % (epoch,
                                                                                                    cf.train_num_epochs,
                                                                                                    i, total_step,
-                                                                                                   loss.data[0],
+                                                                                                   loss.data,
                                                                                                    np.exp(
-                                                                                                       loss.data[0])))
+                                                                                                       loss.data)))
 
         # Save the Adaptive Attention model after each epoch
         torch.save(adaptive.state_dict(),

@@ -30,8 +30,8 @@ class AttentiveCNN(nn.Module):
 
     def init_weights(self):
         """Initialize the weights."""
-        init.kaiming_uniform(self.affine_a.weight, mode='fan_in')
-        init.kaiming_uniform(self.affine_b.weight, mode='fan_in')
+        init.kaiming_uniform_(self.affine_a.weight, mode='fan_in')
+        init.kaiming_uniform_(self.affine_b.weight, mode='fan_in')
         self.affine_a.bias.data.fill_(0)
         self.affine_b.bias.data.fill_(0)
 
@@ -74,9 +74,9 @@ class Atten(nn.Module):
 
     def init_weights(self):
         """Initialize the weights."""
-        init.xavier_uniform(self.affine_v.weight)
-        init.xavier_uniform(self.affine_g.weight)
-        init.xavier_uniform(self.affine_h.weight)
+        init.xavier_uniform_(self.affine_v.weight)
+        init.xavier_uniform_(self.affine_g.weight)
+        init.xavier_uniform_(self.affine_h.weight)
 
 
     def forward(self, V, h_t):
@@ -141,7 +141,7 @@ class AdaptiveBlock(nn.Module):
         '''
         Initialize final classifier weights
         '''
-        init.kaiming_normal(self.mlp.weight, mode='fan_in')
+        init.kaiming_normal_(self.mlp.weight, mode='fan_in')
         self.mlp.bias.data.fill_(0)
 
     def forward(self, x, hiddens, cells, V):
@@ -231,7 +231,7 @@ class Decoder(nn.Module):
                                                     # states[1] is c_n with the size of [1, cf.train_batch_size, cf.lstm_hidden_size]
 
             # Save hidden and cell
-            hiddens[:, time_step, :] = h_t  # Batch_first
+            hiddens[:, time_step, :] = h_t.squeeze(1) # Batch_first
             cells[time_step, :, :] = states[1]
 
         # cell: Batch x seq_len x hidden_size
