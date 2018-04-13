@@ -141,7 +141,7 @@ class AdaptiveBlock(nn.Module):
         '''
         Initialize final classifier weights
         '''
-        init.kaiming_normal_(self.mlp.weight, mode='fan_in')
+        init.kaiming_normal(self.mlp.weight, mode='fan_in')
         self.mlp.bias.data.fill_(0)
 
     def forward(self, x, hiddens, cells, V):
