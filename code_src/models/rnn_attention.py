@@ -74,9 +74,9 @@ class Atten(nn.Module):
 
     def init_weights(self):
         """Initialize the weights."""
-        init.xavier_uniform_(self.affine_v.weight)
-        init.xavier_uniform_(self.affine_g.weight)
-        init.xavier_uniform_(self.affine_h.weight)
+        init.xavier_uniform(self.affine_v.weight)
+        init.xavier_uniform(self.affine_g.weight)
+        init.xavier_uniform(self.affine_h.weight)
 
 
     def forward(self, V, h_t):
