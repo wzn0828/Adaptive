@@ -1,2 +1,4 @@
 Experiments/
 .idea
+__pycache__/
+*/__pycache__/
