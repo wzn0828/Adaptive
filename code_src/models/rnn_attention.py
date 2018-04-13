@@ -30,8 +30,8 @@ class AttentiveCNN(nn.Module):
 
     def init_weights(self):
         """Initialize the weights."""
-        init.kaiming_uniform_(self.affine_a.weight, mode='fan_in')
-        init.kaiming_uniform_(self.affine_b.weight, mode='fan_in')
+        init.kaiming_uniform(self.affine_a.weight, mode='fan_in')
+        init.kaiming_uniform(self.affine_b.weight, mode='fan_in')
         self.affine_a.bias.data.fill_(0)
         self.affine_b.bias.data.fill_(0)
 
