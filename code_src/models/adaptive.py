@@ -88,7 +88,7 @@ class Atten(nn.Module):
 
         # z_t = W_h * tanh( content_v )
         z_t = self.affine_h(self.dropout(F.tanh(content_v))).squeeze(3)     # size of [cf.train_batch_size, maxlength(captions), 49]
-        alpha_t = F.softmax(z_t.view(-1, z_t.size(2))).view(z_t.size(0), z_t.size(1), -1)   # size of [cf.train_batch_size, maxlength(captions),49]
+        alpha_t = F.softmax(z_t.view(-1, z_t.size(2)), dim=1).view(z_t.size(0), z_t.size(1), -1)   # size of [cf.train_batch_size, maxlength(captions),49]
 
         # Construct c_t: B x seq x hidden_size
         c_t = torch.bmm(alpha_t, V).squeeze(2)      # size of [cf.train_batch_size, maxlength(captions), cf.lstm_hidden_size]
@@ -100,7 +100,7 @@ class Atten(nn.Module):
 
         # Attention score between sentinel and image content
         extended = torch.cat((z_t, z_t_extended), dim=2)    # size of [cf.train_batch_size, maxlength(captions), 50]
-        alpha_hat_t = F.softmax(extended.view(-1, extended.size(2))).view(extended.size(0), extended.size(1), -1)   # size of [cf.train_batch_size, maxlength(captions), 50]
+        alpha_hat_t = F.softmax(extended.view(-1, extended.size(2)),dim=1).view(extended.size(0), extended.size(1), -1)   # size of [cf.train_batch_size, maxlength(captions), 50]
         beta_t = alpha_hat_t[:, :, -1]  # size of [cf.train_batch_size, maxlength(captions)]
 
         # c_hat_t = beta * s_t + ( 1 - beta ) * c_t
