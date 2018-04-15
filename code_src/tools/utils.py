@@ -185,7 +185,7 @@ def coco_eval(cf, model = None, epoch=0, test_mode = False):
         packed_scores = sampler_output[-1]
 
         loss = LMcriterion(packed_scores[0], targets)
-        valid_batch_losses.append(loss.data)
+        valid_batch_losses.append(loss.data.cpu().numpy()[0])
         
         if torch.cuda.is_available():
             captions = generated_captions.cpu().data.numpy()
