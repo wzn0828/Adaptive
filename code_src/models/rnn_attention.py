@@ -104,6 +104,7 @@ class Atten(nn.Module):
 
         # lstm initialize, temporarily zero
         # use lstm to integrate weighted feature V_weighted
+        self.lstm.flatten_parameters()
         output_h_t, h_c = self.lstm(V_weighted.view(-1, V_weighted.size(2), V_weighted.size(3)), None)    # size of output_h_t is [-1,V_weighted.size(2),cf.rnn_attention_hiddensize]
         # extract the last hidden output
         h_T = h_c[0]    # size of h_T is [num_layers * num_directions, -1, self.rnn_attention_hiddensize]
@@ -286,7 +287,7 @@ class Encoder2Decoder(nn.Module):
         return packed_scores
 
     # Caption generator
-    def sampler(self, images, lengths, max_len=28):
+    def sampler(self, images, lengths, max_len=50):
         '''
         Samples captions for given image features (Greedy search).
         :param images: size of [cf.eval_batch_size, 3, 224, 224]
