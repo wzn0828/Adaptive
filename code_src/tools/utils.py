@@ -150,7 +150,7 @@ def coco_eval(cf, model = None, epoch=0, test_mode = False, valid_mode = False):
 
     # Validation images are required to be resized to 224x224 already
     transform = transforms.Compose([
-        transforms.Scale((cf.train_crop_size, cf.train_crop_size)),
+        transforms.Resize((cf.train_crop_size, cf.train_crop_size)),
         transforms.ToTensor(),
         transforms.Normalize((0.485, 0.456, 0.406),
                              (0.229, 0.224, 0.225))])
@@ -178,9 +178,10 @@ def coco_eval(cf, model = None, epoch=0, test_mode = False, valid_mode = False):
     LMcriterion = nn.CrossEntropyLoss()
 
     valid_batch_losses = []
-    for i, (images, targets, lengths, img_ids, filenames) in enumerate(data_loader):
+    for i, (images, captions, lengths, img_ids, filenames) in enumerate(data_loader):
         
         images = to_var(images)
+        captions = to_var(captions)  # size of [cf.valid_batch_size, maxlength of current batch]
         lengths = [cap_len - 1 for cap_len in lengths]  # size of cf.train_batch_size
         targets = pack_padded_sequence(captions[:, 1:], lengths, batch_first=True)[0]  # size of sum(lengths)
 
