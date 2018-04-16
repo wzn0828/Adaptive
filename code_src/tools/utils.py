@@ -123,14 +123,18 @@ class CocoEvalLoader( datasets.ImageFolder ):
         return len(self.ids)
 
 # MSCOCO Evaluation function on validation or test dataset
-def coco_eval(cf, model = None, epoch=0, test_mode = False):
+def coco_eval(cf, model = None, epoch=0, test_mode = False, valid_mode = False):
     
     '''
     model: trained model to be evaluated
     cf: pre-set parameters
     epoch: epoch #, for disp purpose
-    test_mode: flag of test or validation
+    test_mode: flag of test or validation of train
+    valid_mode: flag of just valid, not validataion of train
     '''
+
+    # test_mode and valid_mode can not be true at the same time
+    assert not(test_mode and valid_mode), "test_mode and valid_mode can not be true at the same time"
 
     # Load the vocabulary
     with open(cf.vocab_path, 'rb') as f:
@@ -138,9 +142,9 @@ def coco_eval(cf, model = None, epoch=0, test_mode = False):
 
     cf.vocab_length = len(vocab)
 
-    # load parameters dict of model for test
-    if test_mode:
-        model = get_test_model(cf)
+    # load parameters dict of model for test or valid
+    if test_mode or valid_mode:
+        model = get_testOrValid_model(cf, test_mode, valid_mode)
 
     model.eval()
 
@@ -234,7 +238,10 @@ def coco_eval(cf, model = None, epoch=0, test_mode = False):
         cf.val_result_path = os.path.join(cf.exp_dir, 'val_results')
         if not os.path.exists(cf.val_result_path):
             os.makedirs(cf.val_result_path)
-        resFile = os.path.join(cf.val_result_path, 'mixed-' + str(epoch) + '.json')
+        filename = 'mixed-' + str(epoch) + '.json'
+        if valid_mode:
+            filename = cf.valid_pretrained_model.replace('/', '_').split('.')[0] + '.json'
+        resFile = os.path.join(cf.val_result_path, filename)
 
     json.dump(results, open(resFile, 'w'))
 
@@ -249,7 +256,9 @@ def coco_eval(cf, model = None, epoch=0, test_mode = False):
     cider = 0.
     print_string = '-----------Evaluation performance on MS-COCO validation dataset for Epoch %d----------' % epoch
     if test_mode:
-        print_string = '-----------Evaluation performance on MS-COCO test dataset for pretrained_model: %s----------' % test_pretrained_model_name
+        print_string = '-----------Evaluation performance on MS-COCO test dataset for pretrained_model: %s----------' % cf.test_pretrained_model
+    elif valid_mode:
+        print_string = '-----------Evaluation performance on MS-COCO test dataset for pretrained_model: %s----------' % cf.valid_pretrained_model
     print(print_string)
 
     for metric, score in cocoEval.eval.items():
@@ -261,7 +270,7 @@ def coco_eval(cf, model = None, epoch=0, test_mode = False):
 
 
 
-def get_test_model(cf):
+def get_testOrValid_model(cf, test_mode, valid_mode):
     # build model
     if cf.atten_model_name == 'adaptive':
         adaptive = atten_models.adaptive.Encoder2Decoder(cf.lstm_embed_size, cf.vocab_length, cf.lstm_hidden_size)
@@ -269,7 +278,10 @@ def get_test_model(cf):
         adaptive = atten_models.rnn_attention.Encoder2Decoder(cf)
 
     # load pretrained model
-    adaptive.load_state_dict(torch.load(cf.test_pretrained_model))
+    if test_mode:
+        adaptive.load_state_dict(torch.load(cf.test_pretrained_model))
+    elif valid_mode:
+        adaptive.load_state_dict(torch.load(cf.valid_pretrained_model))
     # Change to GPU mode if available
     if torch.cuda.is_available():
         adaptive.cuda()
