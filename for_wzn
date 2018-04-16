@@ -10,3 +10,7 @@
 10\ the calculation for output yt may be too simple.
 11\ lstm clip choice.
 12\ lstm add batchnorm or not.
+13\ make every count clear: count of train/valid/test images, annos; max length of annos;
+14\ to make relationship between batch and count clear;
+15\ Do not save resnet parameters when save state_dict
+16\ compare dataloader between train's and validation's

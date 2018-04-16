@@ -10,7 +10,7 @@ from code_src.data.KarpathySplit import main_KarpathySplit
 from code_src.tools.utils import coco_eval
 from code_src.data.build_vocab import Vocabulary
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '1,2,3'
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
 
 def process(cf):
@@ -20,7 +20,7 @@ def process(cf):
         main_resize_images(cf)
 
     if cf.vacab_build_Ornot:
-        print('>---------vacal build---------<')
+        print('>---------vocal build---------<')
         main_build_vocab(cf)
 
     if cf.KarpathySplitOrnot:
