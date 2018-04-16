@@ -269,7 +269,6 @@ def coco_eval(cf, model = None, epoch=0, test_mode = False, valid_mode = False):
     return cider, valid_loss
 
 
-
 def get_testOrValid_model(cf, test_mode, valid_mode):
     # build model
     if cf.atten_model_name == 'adaptive':

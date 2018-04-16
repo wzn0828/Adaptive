@@ -53,6 +53,8 @@ class Configuration():
                 cf.fine_tune_cnn_start_layer) + '_cnn_start_epoch_' + str(cf.fine_tune_cnn_start_epoch)
         if cf.testOrnot:
             model_description += 'Test_' + cf.test_pretrained_model.replace('/', '_').split('.')[0]
+        if cf.validOrnot:
+            model_description += 'Valid_' + cf.valid_pretrained_model.replace('/', '_').split('.')[0]
 
         return model_description
 
