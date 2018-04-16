@@ -312,6 +312,7 @@ class Encoder2Decoder(nn.Module):
         '''
         Samples captions for given image features (Greedy search).
         :param images: size of [cf.eval_batch_size, 3, 224, 224]
+        :param lengths: size of cf.eval_batch_size, each element has removed the first word (<start> token)
         :param max_len: the max length of output caption
         :return:
         '''
