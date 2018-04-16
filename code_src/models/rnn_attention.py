@@ -340,4 +340,4 @@ class Encoder2Decoder(nn.Module):
         sampled_ids = torch.cat(sampled_ids, dim=1)
         attention = torch.cat(attention, dim=1)
 
-        return tuple(sampled_ids, attention, packed_scores)
+        return tuple([sampled_ids, attention, packed_scores])

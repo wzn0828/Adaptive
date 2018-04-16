@@ -367,4 +367,4 @@ class Encoder2Decoder(nn.Module):
         attention = torch.cat(attention, dim=1)
         Beta = torch.cat(Beta, dim=1)
 
-        return tuple(sampled_ids, attention, Beta, packed_scores)
+        return tuple([sampled_ids, attention, Beta, packed_scores])
