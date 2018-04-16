@@ -231,7 +231,8 @@ class Decoder(nn.Module):
                                                     # states[1] is c_n with the size of [1, cf.train_batch_size, cf.lstm_hidden_size]
 
             # Save hidden and cell
-            hiddens[:, time_step, :] = h_t.squeeze(1) # Batch_first
+            # hiddens[:, time_step, :] = h_t.squeeze(1) # Batch_first
+            hiddens[:, time_step, :] = h_t  # Batch_first
             cells[time_step, :, :] = states[1]
 
         # cell: Batch x seq_len x hidden_size
