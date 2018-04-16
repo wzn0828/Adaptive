@@ -10,7 +10,7 @@ from code_src.data.KarpathySplit import main_KarpathySplit
 from code_src.tools.utils import coco_eval
 from code_src.data.build_vocab import Vocabulary
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '3'
+os.environ['CUDA_VISIBLE_DEVICES'] = '1,2,3'
 
 
 def process(cf):
@@ -30,6 +30,10 @@ def process(cf):
     if cf.trainOrnot:
         print('>---------start train---------<')
         main_train(cf)
+
+    if cf.validOrnot:
+        print('>---------start valid---------<')
+        coco_eval(cf, valid_mode=True)
 
     if cf.testOrnot:
         print('>---------start test---------<')
