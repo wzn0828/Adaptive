@@ -185,7 +185,7 @@ def coco_eval(cf, model = None, epoch=0, test_mode = False, valid_mode = False):
         lengths = [cap_len - 1 for cap_len in lengths]  # size of cf.train_batch_size
         targets = pack_padded_sequence(captions[:, 1:], lengths, batch_first=True)[0]  # size of sum(lengths)
 
-        sampler_output = model.sampler(images)
+        sampler_output = model.sampler(images, lengths)
         generated_captions = sampler_output[0]
         packed_scores = sampler_output[-1]
 
