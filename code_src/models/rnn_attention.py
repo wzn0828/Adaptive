@@ -286,7 +286,7 @@ class Encoder2Decoder(nn.Module):
         return packed_scores
 
     # Caption generator
-    def sampler(self, images, lengths, max_len=20):
+    def sampler(self, images, lengths, max_len=28):
         '''
         Samples captions for given image features (Greedy search).
         :param images: size of [cf.eval_batch_size, 3, 224, 224]
