@@ -1,6 +1,6 @@
 import os
 import string
-
+import nltk
 import torch
 import torch.utils.data as data
 from PIL import Image
@@ -45,8 +45,10 @@ class CocoDataset(data.Dataset):
             image = self.transform(image)
 
         # Convert caption (string) to word ids.
-        translator = str.maketrans('', '', string.punctuation)
-        tokens = str(caption).lower().translate(translator).strip().split()
+        # translator = str.maketrans('', '', string.punctuation)
+        # tokens = str(caption).lower().translate(translator).strip().split()
+        tokens = [word for word in nltk.tokenize.word_tokenize(caption.lower()) if word not in string.punctuation]
+
         caption = []
         caption.append(vocab('<start>'))
         caption.extend([vocab(token) for token in tokens])
