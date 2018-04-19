@@ -67,10 +67,10 @@ def show_images(images, cols = 1, titles = None):
     plt.show()
 
 # MS COCO evaluation data loader
-class CocoEvalLoader( datasets.ImageFolder ):
+class CocoEvalLoader(datasets.ImageFolder):
 
-    def __init__( self, root, ann_path, vocab, transform=None, target_transform=None,
-                 loader=datasets.folder.default_loader ):
+    def __init__(self, root, ann_path, transform=None, target_transform=None,
+                 loader=datasets.folder.default_loader):
         '''
         Customized COCO loader to get Image ids and Image Filenames
         root: path for images
@@ -80,27 +80,16 @@ class CocoEvalLoader( datasets.ImageFolder ):
         self.transform = transform
         self.target_transform = target_transform
         self.loader = loader
-        self.ann_path = ann_path
-        self.coco = COCO(ann_path)
-        self.ids = list(self.coco.anns.keys())
-        self.vocab = vocab
         self.imgs = json.load(open(ann_path, 'r'))['images']
 
     def __getitem__(self, index):
 
-        coco = self.coco
-        vocab = self.vocab
-        ann_id = self.ids[index]
-        caption = coco.anns[ann_id]['caption']
-        img_id = coco.anns[ann_id]['image_id']
-        filename = coco.loadImgs(img_id)[0]['file_name']
+        filename = self.imgs[index]['file_name']
+        img_id = self.imgs[index]['id']
 
-        # filename = self.imgs[index]['file_name']
-        # img_id = self.imgs[index]['id']
-        
         # Filename for the image
         if 'val' in filename.lower():
-            path = os.path.join(self.root, 'val2014' , filename)
+            path = os.path.join(self.root, 'val2014', filename)
         else:
             path = os.path.join(self.root, 'train2014', filename)
 
@@ -108,19 +97,8 @@ class CocoEvalLoader( datasets.ImageFolder ):
         if self.transform is not None:
             img = self.transform(img)
 
-        # Convert caption (string) to word ids.
-        translator = str.maketrans('', '', string.punctuation)
-        tokens = str(caption).lower().translate(translator).strip().split()
-        caption = []
-        caption.append(vocab('<start>'))
-        caption.extend([vocab(token) for token in tokens])
-        caption.append(vocab('<end>'))
-        target = torch.Tensor(caption)
+        return img, img_id, filename
 
-        return img, target, img_id, filename
-
-    def __len__(self):
-        return len(self.ids)
 
 # MSCOCO Evaluation function on validation or test dataset
 def coco_eval(cf, model = None, epoch=0, test_mode = False, valid_mode = False):
@@ -159,13 +137,11 @@ def coco_eval(cf, model = None, epoch=0, test_mode = False, valid_mode = False):
     ann_path = cf.val_anno_path
     if test_mode:
         ann_path = cf.test_anno_path
-    data_loader = get_loader(cf.resized_image_dir, ann_path, vocab, transform, cf.eval_batch_size, shuffle=False, num_workers=cf.dataloader_num_workers)
 
-    # data_loader = torch.utils.data.DataLoader(
-    #     CocoEvalLoader(cf.resized_image_dir, ann_path, vocab, transform),
-    #     batch_size=cf.eval_batch_size,
-    #     shuffle=False, num_workers=cf.dataloader_num_workers,
-    #     drop_last=False)
+    data_loader = torch.utils.data.DataLoader(CocoEvalLoader(cf.resized_image_dir, ann_path, transform),
+                                              batch_size=cf.eval_batch_size, shuffle=False,
+                                              num_workers=cf.dataloader_num_workers, drop_last=False)
+
 
     # Generated captions to be compared with GT
     results = []
@@ -178,24 +154,16 @@ def coco_eval(cf, model = None, epoch=0, test_mode = False, valid_mode = False):
     LMcriterion = nn.CrossEntropyLoss()
 
     valid_batch_losses = []
-    for i, (images, captions, lengths, img_ids, filenames) in enumerate(data_loader):
+    for i, (images, img_ids, _) in enumerate(data_loader):
         
         images = to_var(images)
-        captions = to_var(captions)  # size of [cf.valid_batch_size, maxlength of current batch]
-        lengths = [cap_len - 1 for cap_len in lengths]  # size of cf.train_batch_size
-        targets = pack_padded_sequence(captions[:, 1:], lengths, batch_first=True)[0]  # size of sum(lengths)
+        sampler_output = model.sampler(images)
 
-        sampler_output = model.sampler(images, lengths)
-        generated_captions = sampler_output[0]
-        packed_scores = sampler_output[-1]
-
-        loss = LMcriterion(packed_scores[0], targets)
-        valid_batch_losses.append(loss.data.cpu().numpy()[0])
-        
+        generated_caption_idx = sampler_output[0]
         if torch.cuda.is_available():
-            captions = generated_captions.cpu().data.numpy()
+            captions = generated_caption_idx.cpu().data.numpy()
         else:
-            captions = generated_captions.data.numpy()
+            captions = generated_caption_idx.data.numpy()
         
         # Build caption based on Vocabulary and the '<end>' token
         for image_idx in range(captions.shape[0]):
@@ -204,7 +172,6 @@ def coco_eval(cf, model = None, epoch=0, test_mode = False, valid_mode = False):
             sampled_caption = []
             
             for word_id in sampled_ids:
-                
                 word = vocab.idx2word[word_id]
                 if word == '<end>':
                     break
@@ -220,14 +187,7 @@ def coco_eval(cf, model = None, epoch=0, test_mode = False, valid_mode = False):
         if (i+1) % 10 == 0:
             print('[%d/%d]' % ((i + 1), len(data_loader)))
 
-    # print loss
-    valid_loss = np.array(valid_batch_losses).mean()
-    if test_mode:
-        print('Test Loss on', cf.test_pretrained_model, valid_loss)
-    else:
-        print('Valid Loss on epoch', epoch, valid_loss)
-
-    print('------------------------Caption Generated-------------------------------------')
+    print('#-----------------------Caption Generated-----------------------#')
 
     # Evaluate the results based on the COCO API
 
@@ -259,7 +219,7 @@ def coco_eval(cf, model = None, epoch=0, test_mode = False, valid_mode = False):
     if test_mode:
         print_string = '-----------Evaluation performance on MS-COCO test dataset for pretrained_model: %s----------' % cf.test_pretrained_model
     elif valid_mode:
-        print_string = '-----------Evaluation performance on MS-COCO test dataset for pretrained_model: %s----------' % cf.valid_pretrained_model
+        print_string = '-----------Evaluation performance on MS-COCO valid dataset for pretrained_model: %s----------' % cf.valid_pretrained_model
     print(print_string)
 
     for metric, score in cocoEval.eval.items():
@@ -267,7 +227,7 @@ def coco_eval(cf, model = None, epoch=0, test_mode = False, valid_mode = False):
         if metric == 'CIDEr':
             cider = score
             
-    return cider, valid_loss
+    return cider
 
 
 def get_testOrValid_model(cf, test_mode, valid_mode):

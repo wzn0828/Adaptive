@@ -287,11 +287,10 @@ class Encoder2Decoder(nn.Module):
         return packed_scores
 
     # Caption generator
-    def sampler(self, images, lengths, max_len=50):
+    def sampler(self, images, max_len=30):
         '''
         Samples captions for given image features (Greedy search).
         :param images: size of [cf.eval_batch_size, 3, 224, 224]
-        :param lengths: size of cf.eval_batch_size, each element has removed the first word (<start> token)
         :param max_len: the max length of output caption
         :return:
         '''
@@ -318,13 +317,10 @@ class Encoder2Decoder(nn.Module):
         # Initial hidden states
         states = None
 
-        concat_scores = []
         for i in range(max_len):
             scores, states, atten_weights = self.decoder(V, v_g, captions, states)      # size of scores is [cf.eval_batch_size, 1(maxlength(captions)), 10141(vocab_size)]
                                                                                         # size of atten_weights [cf.eval_batch_size, 1, 49]
                                                                                         # size of beta [cf.eval_batch_size, 1, 1]
-            concat_scores.append(scores)
-
             predicted = scores.max(2)[1]
             captions = predicted    # size of captions is [cf.eval_batch_size, 1], captions is the index of current output word
 
@@ -332,13 +328,10 @@ class Encoder2Decoder(nn.Module):
             sampled_ids.append(captions)
             attention.append(atten_weights)
 
-        concat_scores = torch.cat(concat_scores, 1)  # size of concat_scores is [cf.eval_batch_size, max_len, 10141(vocab_size)]
-        # Pack it to make criterion calculation more efficient
-        packed_scores = pack_padded_sequence(concat_scores, lengths,
-                                             batch_first=True)  # size of packed_scores.data is [sum(lengths), 10141]
+
         # caption: cf.eval_batch_size x max_len
         # attention: cf.eval_batch_size x max_len x 49
         sampled_ids = torch.cat(sampled_ids, dim=1)
         attention = torch.cat(attention, dim=1)
 
-        return tuple([sampled_ids, attention, packed_scores])
+        return sampled_ids, attention
