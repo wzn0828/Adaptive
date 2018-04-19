@@ -3,8 +3,8 @@ experiment_path             = 'Experiments'
 vocab_path                  = 'code_src/data/vocab.pkl'   # path for vocabulary wrapper
 resized_image_dir           = '/media/samsumg_1tb/Image_Caption/Datasets/MSCOCO/resized'   # directory for resized training images
 image_dir                   = '/media/samsumg_1tb/Image_Caption/Datasets/MSCOCO'
-captions_val_origin         = '/media/samsumg_1tb/Image_Caption/Datasets/MSCOCO/annotations/captions_val2014.json'
-captions_train_origin       = '/media/samsumg_1tb/Image_Caption/Datasets/MSCOCO/annotations/captions_train2014.json'
+captions_val_origin         = '/media/samsumg_1tb/Image_Caption/Datasets/MSCOCO/annotations/annotations_trainval2014/captions_val2014.json'
+captions_train_origin       = '/media/samsumg_1tb/Image_Caption/Datasets/MSCOCO/annotations/annotations_trainval2014/captions_train2014.json'
 splited_anno_path_prefix    = 'code_src/data/annotations/karpathy_split_'
 train_anno_path             = 'code_src/data/annotations/karpathy_split_train.json'  # path for train annotation json file
 val_anno_path               = 'code_src/data/annotations/karpathy_split_val.json'    # path for validation annotation json file
@@ -21,7 +21,7 @@ train_random_seed           = 123                                               
 train_pretrained            = False         # use train_pretrained_model or not
 train_pretrained_model      = 'Experiments/Train_lr_0.0005_cnnlr_1e-05_cnn_start_layer_5_cnn_start_epoch_20___2018-03-15-19-55-18/trained_models/adaptive-33.pkl'      # [''|'path'] path of used model'] start from checkpoint or scratch, '' represents start from scratch
 train_num_epochs            = 50                                        # the maximum epochs
-train_batch_size            = 20                                        # on cluster setup, 60 each x 4 for Huckle server
+train_batch_size            = 10                                        # on cluster setup, 60 each x 4 for Huckle server
 train_clip                  = 0.1                                       # Gradient clipping for gradient exploding problem in LSTM
 train_lr_decay              = 20                                        # epoch at which to start lr decay
 train_lr_decay_every        = 50                                        # decay learning rate at every this number
@@ -48,7 +48,7 @@ lstm_embed_size             = 256                                       # dimens
 lstm_hidden_size            = 512                                       # dimension of lstm hidden states
 
 # For eval_size > 30, it will cause cuda OOM error on Huckleberry
-eval_batch_size             = 20
+eval_batch_size             = 10
 # on cluster setup, 30 each x 4
 dataloader_num_workers      = 4
 
@@ -57,7 +57,7 @@ resizeOrnot                 = False                                     # resize
 resized_image_size          = 256                                       # size for image after processing
 
 #--------------------build_vocabury--------------------#
-vacab_build_Ornot           = False
+vacab_build_Ornot           = True
 vocab_threshold             = 5                                         # minimum word count threshold
 
 
@@ -75,5 +75,5 @@ rnn_attention_hiddensize    = lstm_hidden_size
 rnn_attention_numlayers     = 1
 
 #--------------------valid-------------------#
-validOrnot                   = True
+validOrnot                   = False
 valid_pretrained_model       = 'Experiments/Train_rnn_attention_lr_5e-05_cnnlr_1e-05_cnn_start_layer_5_cnn_start_epoch_20___2018-04-15-19-33-51/trained_models/adaptive-1.pkl'      # used pretrained model parameters in test

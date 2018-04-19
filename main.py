@@ -19,13 +19,13 @@ def process(cf):
         print('>---------resize images---------<')
         main_resize_images(cf)
 
-    if cf.vacab_build_Ornot:
-        print('>---------vocal build---------<')
-        main_build_vocab(cf)
-
     if cf.KarpathySplitOrnot:
         print('>---------KarpathySplit---------<')
         main_KarpathySplit(cf)
+
+    if cf.vacab_build_Ornot:
+        print('>---------vocal build---------<')
+        main_build_vocab(cf)
 
     if cf.trainOrnot:
         print('>---------start train---------<')
