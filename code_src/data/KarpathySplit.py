@@ -25,6 +25,9 @@ def main_KarpathySplit(cf):
     dataset['val'] = imgs[:num_val]
     dataset['test'] = imgs[num_val: num_val + num_test]
     dataset['train'] = imgs[num_val + num_test:]
+    dataset['val_small'] = imgs[:500]
+    dataset['test_small'] = imgs[500:1000]
+    dataset['train_small'] = imgs[1000:1500]
 
     # Group by image ids
     itoa = {}
@@ -39,7 +42,7 @@ def main_KarpathySplit(cf):
     info = train['info']
     licenses = train['licenses']
 
-    split = ['val', 'test', 'train']
+    split = ['val', 'test', 'train', 'val_small', 'test_small', 'train_small']
 
     for subset in split:
 
