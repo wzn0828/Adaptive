@@ -10,7 +10,7 @@ from coco.PythonAPI.pycocotools.coco import COCO
 
 class CocoDataset(data.Dataset):
     """COCO Custom Dataset compatible with torch.utils.data.DataLoader."""
-    def __init__(self, root, json, vocab, transform=None):
+    def __init__(self, root, anno_path, vocab, transform=None):
         """Set the path for images, captions and vocabulary wrapper.
         
         Args:
@@ -21,7 +21,7 @@ class CocoDataset(data.Dataset):
         """
 
         self.root = root
-        self.coco = COCO(json)
+        self.coco = COCO(anno_path)
         self.ids = list(self.coco.anns.keys())
         self.vocab = vocab
         self.transform = transform
@@ -97,11 +97,11 @@ def collate_fn(data):
     return images, targets, lengths, img_ids, filenames
 
 
-def get_loader(root, json, vocab, transform, batch_size, shuffle, num_workers):
+def get_loader(root, anno_path, vocab, transform, batch_size, shuffle, num_workers):
     """Returns torch.utils.data.DataLoader for custom coco dataset."""
     # COCO caption dataset
     coco = CocoDataset(root=root,
-                       json=json,
+                       anno_path=anno_path,
                        vocab=vocab,
                        transform=transform)
     
