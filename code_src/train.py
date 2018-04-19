@@ -70,7 +70,6 @@ def main_train(cf):
     best_epoch = 0
 
     train_losses = []
-    valid_losses = []
     # Start Training
     for epoch in range(start_epoch, cf.train_num_epochs + 1):
 
@@ -133,11 +132,10 @@ def main_train(cf):
         train_losses.append(train_loss)
 
         # Evaluation on validation set
-        cider, valid_loss = coco_eval(cf, model=adaptive, epoch=epoch)
-        valid_losses.append(valid_loss)
+        cider = coco_eval(cf, model=adaptive, epoch=epoch)
 
         # plot figure losses
-        figure_loss(cf, epoch, train_losses, valid_losses)
+        figure_loss(cf, epoch, train_losses)
 
         cider_scores.append(cider)
         print('#---printing cider_scores---#')
@@ -238,20 +236,17 @@ def early_stop_Ornot(cf, cider_scores, best_cider):
     return flag
 
 
-def figure_loss(cf, epoch, train_losses, valid_losses):
-    if epoch > 0 and epoch % cf.figure_epoch == 0:
+def figure_loss(cf, epoch, train_losses):
+    if epoch > 0 and epoch % cf.train_figure_epoch == 0:
         print('---> Train losses:')
         print(train_losses)
-        print('---> Valid losses:')
-        print(valid_losses)
         # losses figure
         plt.figure()
-        plt.title('Losses')
-        plt.xlabel('steps')
+        plt.title('Train Losses')
+        plt.xlabel('epochs')
         plt.ylabel('losses')
-        p1 = plt.plot(train_losses, color='b')
-        p2 = plt.plot(valid_losses, color='r')
-        plt.legend((p1[0], p2[0]), ('trainLosses', 'validLosses'))
+        plt.plot(train_losses, color='b', label='train losses')
+        plt.legend()
         figure_name = 'loss_figure_' + str(epoch) + '.jpg'
         figure_path = os.path.join(cf.exp_dir, figure_name)
         plt.savefig(figure_path)
