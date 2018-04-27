@@ -14,3 +14,7 @@
 14\ to make relationship between batch and count clear;
 15\ Do not save resnet parameters when save state_dict
 16\ compare dataloader between train's and validation's
+17\ Do not save the part of dicti of Resnet, which is not optimized during training.
+18\ loss figure, the axis should be [1,2,...]
+19\ logfile has no content at the begining.
+20\ left freedom: learning rate; resnet all layer optimization; train_clip or not or lstm_gradient_clip;optimization methods;structure.
