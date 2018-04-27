@@ -50,8 +50,8 @@ def main_train(cf):
     # Constructing CNN parameters for optimization, only fine-tuning higher layers
     cnn_optimizer = get_cnn_optimizer(adaptive, cf)
 
-    # Will decay later    
-    learning_rate = cf.adam_learning_rate
+    # # Will decay later
+    # learning_rate = cf.adam_learning_rate
 
     # Language Modeling Loss
     LMcriterion = nn.CrossEntropyLoss()
@@ -73,11 +73,12 @@ def main_train(cf):
     # Start Training
     for epoch in range(start_epoch, cf.train_num_epochs + 1):
 
-        # Start Learning Rate Decay
-        learning_rate = lr_decay(cf, epoch, learning_rate)
-        print('Learning Rate for Epoch %d: %.6f' % (epoch, learning_rate))
+        # # Start Learning Rate Decay
+        # learning_rate = lr_decay(cf, epoch, learning_rate)
 
-        optimizer = get_optimizer(cf, learning_rate, params)
+        # print('Learning Rate for Epoch %d: %.6f' % (epoch, learning_rate))
+
+        optimizer = get_optimizer(cf, params)
 
         # Language Modeling Training
         print('------------------Training for Epoch %d----------------' % (epoch))
@@ -110,7 +111,7 @@ def main_train(cf):
             # Optimize
             optimizer.step()
             # Start CNN fine-tuning
-            if epoch > cf.fine_tune_cnn_start_epoch:
+            if epoch > cf.opt_fine_tune_cnn_start_epoch:
                 cnn_optimizer.step()
 
             # Print log info
@@ -177,8 +178,12 @@ def get_model(cf):
     return adaptive, start_epoch, params
 
 
-def get_optimizer(cf, learning_rate, params):
-    optimizer = torch.optim.Adam(params, lr=learning_rate, betas=(cf.adam_alpha, cf.adam_beta))
+def get_optimizer(cf, params):
+    if cf.opt_rnn_optimization == 'adam':
+        optimizer = torch.optim.Adam(params, lr=cf.opt_rnn_adam_learning_rate, betas=(cf.opt_rnn_adam_alpha, cf.opt_rnn_adam_beta))
+    elif cf.opt_rnn_optimization == 'sgd':
+        optimizer = torch.optim.SGD(params, lr=cf.opt_rnn_sgd_learning_rate, momentum=cf.opt_rnn_sgd_momentum, nesterov=True)
+
     return optimizer
 
 
@@ -190,6 +195,7 @@ def lr_decay(cf, epoch, learning_rate):
     :param learning_rate: current learning_rate
     :return:
     '''
+
     if epoch > cf.train_lr_decay:
         frac = float(epoch - cf.train_lr_decay) / cf.train_lr_decay_every
         decay_factor = math.pow(0.5, frac)
@@ -207,11 +213,15 @@ def get_cnn_optimizer(adaptive, cf):
     :param cf: config file
     :return: parameters of cnn needed to be optimized
     """
-    cnn_subs = list(adaptive.encoder.resnet_conv.children())[cf.fine_tune_cnn_start_layer:]
+    cnn_subs = list(adaptive.encoder.resnet_conv.children())[cf.opt_fine_tune_cnn_start_layer:]
     cnn_params = [list(sub_module.parameters()) for sub_module in cnn_subs]
     cnn_params = [item for sublist in cnn_params for item in sublist]
-    cnn_optimizer = torch.optim.Adam(cnn_params, lr=cf.adam_learning_rate_cnn,
-                                     betas=(cf.adam_alpha, cf.adam_beta))
+
+    if cf.opt_cnn_optimization == 'adam':
+        cnn_optimizer = torch.optim.Adam(cnn_params, lr=cf.opt_cnn_adam_learning_rate, betas=(cf.opt_cnn_adam_alpha, cf.opt_cnn_adam_beta))
+    elif cf.opt_cnn_optimization == 'sgd':
+        cnn_optimizer = torch.optim.SGD(cnn_params, lr=cf.opt_cnn_sgd_learning_rate, momentum=cf.opt_cnn_sgd_momentum, nesterov=True)
+
     return cnn_optimizer
 
 
