@@ -180,9 +180,9 @@ def get_model(cf):
 
 def get_optimizer(cf, params):
     if cf.opt_rnn_optimization == 'adam':
-        optimizer = torch.optim.Adam(params, lr=cf.opt_rnn_adam_learning_rate, betas=(cf.opt_rnn_adam_alpha, cf.opt_rnn_adam_beta))
+        optimizer = torch.optim.Adam(params, lr=cf.opt_rnn_adam_learning_rate, betas=(cf.opt_rnn_adam_alpha, cf.opt_rnn_adam_beta), weight_decay=cf.opt_rnn_adam_weight_decay)
     elif cf.opt_rnn_optimization == 'sgd':
-        optimizer = torch.optim.SGD(params, lr=cf.opt_rnn_sgd_learning_rate, momentum=cf.opt_rnn_sgd_momentum, nesterov=True)
+        optimizer = torch.optim.SGD(params, lr=cf.opt_rnn_sgd_learning_rate, momentum=cf.opt_rnn_sgd_momentum, nesterov=True, weight_decay=cf.opt_rnn_sgd_weight_decay)
 
     return optimizer
 
