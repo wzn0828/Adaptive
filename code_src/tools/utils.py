@@ -8,6 +8,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
+import torch.utils.data as data
 from torchvision import transforms, datasets
 
 from coco.PythonAPI.pycocotools.coco import COCO
@@ -67,7 +68,7 @@ def show_images(images, cols = 1, titles = None):
     plt.show()
 
 # MS COCO evaluation data loader
-class CocoEvalLoader(datasets.ImageFolder):
+class CocoEvalLoader(data.Dataset):
 
     def __init__(self, root, ann_path, transform=None, target_transform=None,
                  loader=datasets.folder.default_loader):
@@ -98,6 +99,9 @@ class CocoEvalLoader(datasets.ImageFolder):
             img = self.transform(img)
 
         return img, img_id, filename
+
+    def __len__(self):
+        return len(self.imgs)
 
 
 # MSCOCO Evaluation function on validation or test dataset
