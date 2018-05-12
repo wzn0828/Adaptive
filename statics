@@ -5,3 +5,4 @@
 5\ captionsOfTrain.maxlength=52;
 6\ captionsOfTrain.minlength=5;
 7\ captionsOfTrain.meanlength=10.473;
+8\ when testing, maxlength = 30;

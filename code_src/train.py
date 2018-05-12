@@ -101,7 +101,7 @@ def main_train(cf):
 
             # Compute loss and backprop
             loss = LMcriterion(packed_scores[0], targets)
-            train_batch_losses.append(loss.data.cpu().numpy()[0])
+            train_batch_losses.append(loss.data.cpu().numpy().tolist())
             loss.backward()
 
             # Gradient clipping for gradient exploding problem in LSTM

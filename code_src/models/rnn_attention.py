@@ -233,7 +233,7 @@ class Decoder(nn.Module):
 
             # Save hidden and cell
             # hiddens[:, time_step, :] = h_t.squeeze(1) # Batch_first
-            hiddens[:, time_step, :] = h_t  # Batch_first
+            hiddens[:, time_step, :] = h_t.squeeze(1)  # Batch_first
             cells[time_step, :, :] = states[1]
 
         # cell: Batch x seq_len x hidden_size
@@ -318,9 +318,9 @@ class Encoder2Decoder(nn.Module):
         states = None
 
         for i in range(max_len):
-            scores, states, atten_weights = self.decoder(V, v_g, captions, states)      # size of scores is [cf.eval_batch_size, 1(maxlength(captions)), 10141(vocab_size)]
-                                                                                        # size of atten_weights [cf.eval_batch_size, 1, 49]
-                                                                                        # size of beta [cf.eval_batch_size, 1, 1]
+            scores, states, atten_weights = self.decoder(V, v_g, captions, states)    # size of scores is [cf.eval_batch_size, 1(maxlength(captions)), 10141(vocab_size)]
+                                                                                      # size of atten_weights [cf.eval_batch_size, 1, 49]
+                                                                                      # size of beta [cf.eval_batch_size, 1, 1]
             predicted = scores.max(2)[1]
             captions = predicted    # size of captions is [cf.eval_batch_size, 1], captions is the index of current output word
 

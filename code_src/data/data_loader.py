@@ -1,6 +1,7 @@
 import os
 import string
 import nltk
+nltk.download('punkt')
 import torch
 import torch.utils.data as data
 from PIL import Image
