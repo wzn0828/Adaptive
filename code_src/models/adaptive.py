@@ -253,7 +253,7 @@ class Decoder(nn.Module):
                                                     # states[1] is c_n with the size of [1, cf.train_batch_size, cf.lstm_hidden_size]
 
             # Save hidden and cell
-            hiddens[:, time_step, :] = h_t  # Batch_first
+            hiddens[:, time_step, :] = h_t.squeeze(1)  # Batch_first
             cells[time_step, :, :] = states[1]
 
         # cell: Batch x seq_len x hidden_size
@@ -344,8 +344,6 @@ class Encoder2Decoder(nn.Module):
             scores, states, atten_weights, beta = self.decoder(V, v_g, captions, states)    # size of scores is [cf.eval_batch_size, 1(maxlength(captions)), 10141(vocab_size)]
                                                                                             # size of atten_weights [cf.eval_batch_size, 1, 49]
                                                                                             # size of beta [cf.eval_batch_size, 1, 1]
-            concat_scores.append(scores)
-
             predicted = scores.max(2)[1]
             captions = predicted    # size of captions is [cf.eval_batch_size, 1], captions is the index of current output word
 
@@ -354,11 +352,6 @@ class Encoder2Decoder(nn.Module):
             attention.append(atten_weights)
             Beta.append(beta)
 
-        concat_scores = torch.cat(concat_scores, 1)     # size of concat_scores is [cf.eval_batch_size, max_len, 10141(vocab_size)]
-        # Pack it to make criterion calculation more efficient
-        packed_scores = pack_padded_sequence(concat_scores, lengths,
-                                             batch_first=True)  # size of packed_scores.data is [sum(lengths), 10141]
-
         # caption: B x max_len
         # attention: B x max_len x 49
         # sentinel: B x max_len
@@ -366,4 +359,4 @@ class Encoder2Decoder(nn.Module):
         attention = torch.cat(attention, dim=1)
         Beta = torch.cat(Beta, dim=1)
 
-        return tuple([sampled_ids, attention, Beta, packed_scores])
+        return sampled_ids, attention, Beta
