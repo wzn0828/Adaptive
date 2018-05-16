@@ -8,7 +8,7 @@ from torch.nn import init
 
 
 # ========================================Recurrent Attention========================================
-# Encoder, doing this for extracting cnn features. Temporarily, this is the same as adaptive.py.
+# Encoder, doing this for extracting cnn features. Temporarily, this is the same as base_adaptive.py.
 class AttentiveCNN(nn.Module):
     def __init__(self, embed_size, hidden_size):
         super(AttentiveCNN, self).__init__()

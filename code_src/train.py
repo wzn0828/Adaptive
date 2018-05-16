@@ -158,7 +158,7 @@ def main_train(cf):
 def get_model(cf):
     # build model
     if cf.atten_model_name == 'adaptive':
-        adaptive = atten_models.adaptive.Encoder2Decoder(cf.lstm_embed_size, cf.vocab_length, cf.lstm_hidden_size)
+        adaptive = atten_models.base_adaptive.Encoder2Decoder(cf.lstm_embed_size, cf.vocab_length, cf.lstm_hidden_size)
     elif cf.atten_model_name == 'rnn_attention':
         adaptive = atten_models.rnn_attention.Encoder2Decoder(cf)
 

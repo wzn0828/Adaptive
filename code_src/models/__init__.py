@@ -1,1 +1,1 @@
-import code_src.models.adaptive, code_src.models.rnn_attention
+import code_src.models.base_adaptive, code_src.models.rnn_attention
