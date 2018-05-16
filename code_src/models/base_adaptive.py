@@ -7,6 +7,7 @@ import torch.nn.functional as F
 from torch.nn import init
 
 # ========================================Knowing When to Look========================================
+# Encoder, doing this for extracting cnn features.
 class AttentiveCNN(nn.Module):
     def __init__(self, embed_size, hidden_size):
         super(AttentiveCNN, self).__init__()
@@ -235,8 +236,8 @@ class Decoder(nn.Module):
         # Hiddens: Batch x seq_len x hidden_size
         # Cells: seq_len x Batch x hidden_size, default setup by Pytorch
         if torch.cuda.is_available():
-            hiddens = Variable(torch.zeros(x.size(0), x.size(1), self.hidden_size).cuda())  # size of [cf.train_batch_size, maxlength(captions),  cf.lstm_hidden_size]
-            cells = Variable(torch.zeros(x.size(1), x.size(0), self.hidden_size).cuda())    # size of [maxlength(captions),  cf.train_batch_size, cf.lstm_hidden_size]
+            hiddens = Variable(torch.zeros(x.size(0), x.size(1), self.hidden_size).cuda())      # size of [cf.train_batch_size, maxlength(captions),  cf.lstm_hidden_size]
+            cells = Variable(torch.zeros(x.size(1), x.size(0), self.hidden_size).cuda())        # size of [maxlength(captions),  cf.train_batch_size, cf.lstm_hidden_size]
         else:
             hiddens = Variable(torch.zeros(x.size(0), x.size(1), self.hidden_size))
             cells = Variable(torch.zeros(x.size(1), x.size(0), self.hidden_size))
@@ -246,7 +247,7 @@ class Decoder(nn.Module):
         for time_step in range(x.size(1)):
             # Feed in x_t one at a time
             x_t = x[:, time_step, :]    # size of [cf.train_batch_size, 2*cf.lstm_embed_size]
-            x_t = x_t.unsqueeze(1)  # size of [cf.train_batch_size, 1, 2*cf.lstm_embed_size]
+            x_t = x_t.unsqueeze(1)      # size of [cf.train_batch_size, 1, 2*cf.lstm_embed_size]
 
             h_t, states = self.LSTM(x_t, states)    # size of ht is [cf.train_batch_size, 1, cf.lstm_hidden_size]
                                                     # states[0] is h_n with the size of [1, cf.train_batch_size, cf.lstm_hidden_size]
@@ -257,7 +258,7 @@ class Decoder(nn.Module):
             cells[time_step, :, :] = states[1]
 
         # cell: Batch x seq_len x hidden_size
-        cells = cells.transpose(0, 1)
+        cells = cells.transpose(0, 1)       # size of [cf.train_batch_size, maxlength(captions),  cf.lstm_hidden_size]
 
         # Data parallelism for adaptive attention block
         if torch.cuda.device_count() > 1:
@@ -300,15 +301,15 @@ class Encoder2Decoder(nn.Module):
             V, v_g = self.encoder(images)   # size of V is [cf.train_batch_size, 49, 512], v_g's is [cf.train_batch_size, 256]
 
         # Language Modeling on word prediction
-        scores, _, _, _ = self.decoder(V, v_g, captions)    # size of scores is [cf.train_batch_size, 18, 10141(vocab_size)]
+        decoder_outputs = self.decoder(V, v_g, captions)    # size of scores is [cf.train_batch_size, 18, 10141(vocab_size)]
 
         # Pack it to make criterion calculation more efficient
-        packed_scores = pack_padded_sequence(scores, lengths, batch_first=True)  # size of packed_scores.data is [sum(lengths), 10141]
+        packed_scores = pack_padded_sequence(decoder_outputs[0], lengths, batch_first=True) # size of packed_scores.data is [sum(lengths), 10141]
 
         return packed_scores
 
     # Caption generator
-    def sampler(self, images, max_len=20):
+    def sampler(self, images, max_len=30):
         '''
         Samples captions for given image features (Greedy search).
         :param images: size of [cf.eval_batch_size, 3, 224, 224]

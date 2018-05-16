@@ -5,57 +5,10 @@ from torch.nn.utils.rnn import pack_padded_sequence
 from torch.autograd import Variable
 import torch.nn.functional as F
 from torch.nn import init
-
+from code_src.models import base_adaptive
 
 # ========================================Recurrent Attention========================================
 # Encoder, doing this for extracting cnn features. Temporarily, this is the same as base_adaptive.py.
-class AttentiveCNN(nn.Module):
-    def __init__(self, embed_size, hidden_size):
-        super(AttentiveCNN, self).__init__()
-
-        # ResNet-152 backend
-        resnet = models.resnet152(pretrained=True)
-        modules = list(resnet.children())[:-2]  # delete the last fc layer and avg pool.
-        resnet_conv = nn.Sequential(*modules)  # last conv feature
-
-        self.resnet_conv = resnet_conv
-        self.avgpool = nn.AvgPool2d(7)
-        self.affine_a = nn.Linear(2048, hidden_size)  # v_i = W_a * A
-        self.affine_b = nn.Linear(2048, embed_size)  # v_g = W_b * a^g
-
-        # Dropout before affine transformation
-        self.dropout = nn.Dropout(0.5)
-
-        self.init_weights()
-
-    def init_weights(self):
-        """Initialize the weights."""
-        init.kaiming_uniform(self.affine_a.weight, mode='fan_in')
-        init.kaiming_uniform(self.affine_b.weight, mode='fan_in')
-        self.affine_a.bias.data.fill_(0)
-        self.affine_b.bias.data.fill_(0)
-
-    def forward(self, images):
-        '''
-        Input: images
-        Output: V=[v_1, ..., v_n], v_g
-        '''
-
-        # Last conv layer feature map
-        A = self.resnet_conv(images)    # size of [cf.train_batch_size, 2048, 7, 7]
-
-        # a^g, average pooling feature map
-        a_g = self.avgpool(A)   # size of [cf.train_batch_size, 2048, 1, 1]
-        a_g = a_g.view(a_g.size(0), -1)     # size of [cf.train_batch_size, 2048]
-
-        # V = [ v_1, v_2, ..., v_49 ]
-        V = A.view(A.size(0), A.size(1), -1).transpose(1, 2)   # size of [cf.train_batch_size, 49, 2048]
-        V = F.relu(self.affine_a(self.dropout(V)))      # size of [cf.train_batch_size, 49, cf.lstm_hidden_size]
-
-        v_g = F.relu(self.affine_b(self.dropout(a_g)))      # size of [cf.train_batch_size, cf.lstm_embed_size]
-
-        return V, v_g
-
 
 # Attention Block for C_hat and attention value calculation
 class Atten(nn.Module):
@@ -232,7 +185,6 @@ class Decoder(nn.Module):
                                                     # states[1] is c_n with the size of [1, cf.train_batch_size, cf.lstm_hidden_size]
 
             # Save hidden and cell
-            # hiddens[:, time_step, :] = h_t.squeeze(1) # Batch_first
             hiddens[:, time_step, :] = h_t.squeeze(1)  # Batch_first
             cells[time_step, :, :] = states[1]
 
@@ -253,38 +205,13 @@ class Decoder(nn.Module):
 
 
 # Whole Architecture with Image Encoder and Caption decoder
-class Encoder2Decoder(nn.Module):
+class Encoder2Decoder(base_adaptive.Encoder2Decoder):
     def __init__(self, cf):    # size of vocab_size is 10141
-        super(Encoder2Decoder, self).__init__()
+        super(Encoder2Decoder, self).__init__(cf.rnn_attention_embed_size, cf.vocab_length, cf.rnn_attention_hiddensize)
 
         # Image CNN encoder and Adaptive Attention Decoder
-        self.encoder = AttentiveCNN(cf.rnn_attention_embed_size, cf.rnn_attention_hiddensize)
+        self.encoder = base_adaptive.AttentiveCNN(cf.rnn_attention_embed_size, cf.rnn_attention_hiddensize)
         self.decoder = Decoder(cf.rnn_attention_embed_size, cf.vocab_length, cf.rnn_attention_hiddensize, cf)
-
-    def forward(self, images, captions, lengths):
-        '''
-        :param images: size of [cf.train_batch_size, 3, 224, 224]
-        :param captions: size of [cf.train_batch_size, maxlength of current batch]
-        :param lengths: size of cf.train_batch_size, each element has removed the first word (<start> token)
-        :return: packed_scores
-        '''
-
-        # Data parallelism for V v_g encoder if multiple GPUs are available
-        # V=[ v_1, ..., v_k ], v_g in the original paper
-        if torch.cuda.device_count() > 1:
-            device_ids = range(torch.cuda.device_count())
-            encoder_parallel = torch.nn.DataParallel(self.encoder, device_ids=device_ids)
-            V, v_g = encoder_parallel(images)
-        else:
-            V, v_g = self.encoder(images)   # size of V is [cf.train_batch_size, 49, 512], v_g's is [cf.train_batch_size, 256]
-
-        # Language Modeling on word prediction
-        scores, _, _ = self.decoder(V, v_g, captions)    # size of scores is [cf.train_batch_size, 18, 10141(vocab_size)]
-
-        # Pack it to make criterion calculation more efficient
-        packed_scores = pack_padded_sequence(scores, lengths, batch_first=True) # size of packed_scores.data is [sum(lengths), 10141]
-
-        return packed_scores
 
     # Caption generator
     def sampler(self, images, max_len=30):
