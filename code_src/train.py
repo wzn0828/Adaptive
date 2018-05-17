@@ -131,26 +131,25 @@ def main_train(cf):
         train_loss = np.array(train_batch_losses).mean()
         print('Train Loss', epoch, train_loss)
         train_losses.append(train_loss)
-
-        # Evaluation on validation set
-        cider = coco_eval(cf, model=adaptive, epoch=epoch)
-
         # plot figure losses
         figure_loss(cf, epoch, train_losses)
 
-        cider_scores.append(cider)
-        print('#---printing cider_scores---#')
-        print(cider_scores)
+        if cf.train_evalOrnot:
+            # Evaluation on validation set
+            cider = coco_eval(cf, model=adaptive, epoch=epoch)
+            cider_scores.append(cider)
+            print('#---printing cider_scores---#')
+            print(cider_scores)
 
-        # record the best cider and best epoch
-        if cider > best_cider:
-            best_cider = cider
-            best_epoch = epoch
+            # record the best cider and best epoch
+            if cider > best_cider:
+                best_cider = cider
+                best_epoch = epoch
 
-        # judge whether early stop
-        whether_early_stop = early_stop_Ornot(cf, cider_scores, best_cider)
-        if whether_early_stop:
-            break
+            # judge whether early stop
+            whether_early_stop = early_stop_Ornot(cf, cider_scores, best_cider)
+            if whether_early_stop:
+                break
 
     print('Model of best epoch #: %d with CIDEr score %.2f' % (best_epoch, best_cider))
 

@@ -6,7 +6,7 @@ image_dir                   = '/home/wangzn/Datasets/ImageCaption/MSCOCO'
 captions_val_origin         = '/home/wangzn/Datasets/ImageCaption/MSCOCO/annotations/annotations_trainval2014/captions_val2014.json'
 captions_train_origin       = '/home/wangzn/Datasets/ImageCaption/MSCOCO/annotations/annotations_trainval2014/captions_train2014.json'
 splited_anno_path_prefix    = 'code_src/data/annotations/karpathy_split_'
-train_anno_path             = 'code_src/data/annotations/karpathy_split_train_small.json'  # path for train annotation json file
+train_anno_path             = 'code_src/data/annotations/karpathy_split_train_overfit.json'  # path for train annotation json file
 val_anno_path               = 'code_src/data/annotations/karpathy_split_val_small.json'    # path for validation annotation json file
 test_anno_path              = 'code_src/data/annotations/karpathy_split_test.json'   # path for test annotation json file
 
@@ -27,6 +27,7 @@ train_lr_decay              = 40                                        # epoch 
 train_lr_decay_every        = 50                                        # decay learning rate half at every this number
 train_early_stop            = True
 train_figure_epoch          = 2
+train_evalOrnot             = False
 
 # optimization
 # CNN fine-tuning
