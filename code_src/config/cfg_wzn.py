@@ -14,7 +14,7 @@ test_anno_path              = 'code_src/data/annotations/karpathy_split_test.jso
 atten_model_name            = 'rnn_attention'    # ['adaptive','rnn_attention']
 
 #--------------------train--------------------#
-trainOrnot                  = True
+trainOrnot                  = False
 train_crop_size             = 224        # size for randomly cropping images
 train_log_step              = 10                                                 # step size for printing log info
 train_random_seed           = 123                                                # random seed for model reproduction
@@ -83,9 +83,13 @@ vacab_build_Ornot           = False
 vocab_threshold             = 5                                         # minimum word count threshold
 
 #--------------------KarpathySplit--------------------#
-KarpathySplitOrnot          = False
+KarpathySplitOrnot          = True
 num_val                     = 5000
 num_test                    = 5000
+num_train_overfit           = 20
+num_train_hyperparameter    = 1000
+num_val_hyperparameter      = 500
+
 
 #--------------------rnn_attention--------------------#
 rnn_attention_bidirectional = True                                      # whether use bidirection in lstm structure of rnn_attention

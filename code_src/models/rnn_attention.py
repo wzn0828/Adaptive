@@ -195,7 +195,6 @@ class Decoder(nn.Module):
         if torch.cuda.device_count() > 1:
             device_ids = range(torch.cuda.device_count())
             adaptive_block_parallel = nn.DataParallel(self.adaptive, device_ids=device_ids)
-
             scores, atten_weights = adaptive_block_parallel(x, hiddens, cells, V)
         else:
             scores, atten_weights = self.adaptive(x, hiddens, cells, V)

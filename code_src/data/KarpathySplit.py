@@ -3,7 +3,7 @@
 
 # # Karpathy Split for MS-COCO Dataset
 import json
-from random import shuffle, seed
+from random import shuffle, seed, sample
 
 def main_KarpathySplit(cf):
     seed(cf.train_random_seed)  # Make it reproducible
@@ -20,14 +20,16 @@ def main_KarpathySplit(cf):
 
     shuffle(imgs)
 
-    # Split into val, test, train
+    # Split into val, test, train, based on karpathy split
     dataset = {}
     dataset['val'] = imgs[:num_val]
     dataset['test'] = imgs[num_val: num_val + num_test]
     dataset['train'] = imgs[num_val + num_test:]
-    dataset['val_small'] = imgs[:500]
-    dataset['test_small'] = imgs[500:1000]
-    dataset['train_small'] = imgs[1000:1500]
+
+    # split subset for hyperparameter, tinyset for overfitting
+    dataset['val_hyperparameter'] = [dataset['val'][i] for i in sorted(sample(range(len(dataset['val'])), cf.num_val_hyperparameter))]
+    dataset['train_hyperparameter'] = [dataset['train'][i] for i in sorted(sample(range(len(dataset['train'])), cf.num_train_hyperparameter))]
+    dataset['train_overfit'] = [dataset['train'][i] for i in sorted(sample(range(len(dataset['train'])), cf.num_train_overfit))]
 
     # Group by image ids
     itoa = {}
@@ -42,9 +44,7 @@ def main_KarpathySplit(cf):
     info = train['info']
     licenses = train['licenses']
 
-    split = ['val', 'test', 'train', 'val_small', 'test_small', 'train_small']
-
-    for subset in split:
+    for subset in dataset.keys():
 
         json_data[subset] = {'type': 'caption', 'info': info, 'licenses': licenses,
                                'images': [], 'annotations': []}
