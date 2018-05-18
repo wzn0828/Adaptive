@@ -50,9 +50,6 @@ def main_train(cf):
     # Constructing CNN parameters for optimization, only fine-tuning higher layers
     cnn_optimizer = get_cnn_optimizer(adaptive, cf)
 
-    # # Will decay later
-    # learning_rate = cf.adam_learning_rate
-
     # Language Modeling Loss
     LMcriterion = nn.CrossEntropyLoss()
 
@@ -95,6 +92,12 @@ def main_train(cf):
             # preparation for train
             adaptive.train()
             adaptive.zero_grad()
+
+            # check overfit tiny dataset
+            if cf.train_overfit_check:
+                params, adaptive = L_BFGS(params, adaptive, images, captions, lengths, targets, LMcriterion, cf, epoch, i, total_step, train_batch_losses)
+                continue
+
 
             # Forward
             packed_scores = adaptive(images, captions, lengths)     # size of packed_scores[0] is [sum(lengths), 10141(vocab_size)]
@@ -153,6 +156,40 @@ def main_train(cf):
 
     print('Model of best epoch #: %d with CIDEr score %.2f' % (best_epoch, best_cider))
 
+
+def L_BFGS(params, adaptive, images, captions, lengths, targets, LMcriterion, cf, epoch, step, total_step, train_batch_losses):
+    optimizer = torch.optim.LBFGS(params, lr=0.8)
+    def closure():
+        # Forward
+        optimizer.zero_grad()
+        packed_scores = adaptive(images, captions,
+                                 lengths)  # size of packed_scores[0] is [sum(lengths), 10141(vocab_size)]
+        # Compute loss and backprop
+        loss = LMcriterion(packed_scores[0], targets)
+        train_batch_losses.append(loss.data.cpu().numpy().tolist())
+        loss.backward()
+        return loss
+    optimizer.step(closure)
+
+    # Gradient clipping for gradient exploding problem in LSTM
+    for p in adaptive.decoder.LSTM.parameters():
+        p.data.clamp_(-cf.train_clip, cf.train_clip)
+
+            # Optimize
+
+            # # Start CNN fine-tuning
+            # if epoch > cf.opt_fine_tune_cnn_start_epoch:
+            #     cnn_optimizer.step()
+
+            # Print log info
+            # if step % cf.train_log_step == 0:
+    print('Epoch [%d/%d], Step [%d/%d], CrossEntropy Loss: %.4f, Perplexity: %5.4f' % (epoch,
+                                                                                       cf.train_num_epochs,
+                                                                                       step, total_step,
+                                                                                       train_batch_losses[-1],
+                                                                                       np.exp(
+                                                                                           train_batch_losses[-1])))
+    return params, adaptive
 
 def get_model(cf):
     # build model
@@ -259,3 +296,4 @@ def figure_loss(cf, epoch, train_losses):
         figure_name = 'loss_figure_' + str(epoch) + '.jpg'
         figure_path = os.path.join(cf.exp_dir, figure_name)
         plt.savefig(figure_path)
+        plt.close()
