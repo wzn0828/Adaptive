@@ -92,6 +92,7 @@ def main_train(cf):
             # preparation for train
             adaptive.train()
             adaptive.zero_grad()
+            optimizer.zero_grad()
 
             # check overfit tiny dataset
             if cf.train_overfit_check:
