@@ -19,7 +19,7 @@ class Atten(nn.Module):
         self.affine_g = nn.Linear(hidden_size, 49, bias=False)  # W_g
         self.affine_h = nn.Linear(49, 1, bias=False)  # w_h
 
-        self.dropout = nn.Dropout(0.5)
+        self.dropout = nn.Dropout(0)
         self.init_weights()
 
         self.rnn_attention_hiddensize = cf.rnn_attention_hiddensize//2 if cf.rnn_attention_bidirectional==True else cf.rnn_attention_hiddensize
@@ -86,7 +86,7 @@ class AdaptiveBlock(nn.Module):
         self.mlp = nn.Linear(hidden_size, vocab_size)
 
         # Dropout layer inside Affine Transformation
-        self.dropout = nn.Dropout(0.5)
+        self.dropout = nn.Dropout(0)
 
         self.hidden_size = hidden_size
         self.init_weights()

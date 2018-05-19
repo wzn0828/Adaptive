@@ -23,7 +23,7 @@ class AttentiveCNN(nn.Module):
         self.affine_b = nn.Linear(2048, embed_size)  # v_g = W_b * a^g
 
         # Dropout before affine transformation
-        self.dropout = nn.Dropout(0.5)
+        self.dropout = nn.Dropout(0)
 
         self.init_weights()
 
@@ -66,7 +66,7 @@ class Atten(nn.Module):
         self.affine_s = nn.Linear(hidden_size, 49, bias=False)  # W_s
         self.affine_h = nn.Linear(49, 1, bias=False)  # w_h
 
-        self.dropout = nn.Dropout(0.5)
+        self.dropout = nn.Dropout(0)
         self.init_weights()
 
     def init_weights(self):
@@ -120,7 +120,7 @@ class Sentinel(nn.Module):
         self.affine_h = nn.Linear(hidden_size, hidden_size, bias=False)
 
         # Dropout applied before affine transformation
-        self.dropout = nn.Dropout(0.5)
+        self.dropout = nn.Dropout(0)
 
         self.init_weights()
 
@@ -156,7 +156,7 @@ class AdaptiveBlock(nn.Module):
         self.mlp = nn.Linear(hidden_size, vocab_size)
 
         # Dropout layer inside Affine Transformation
-        self.dropout = nn.Dropout(0.5)
+        self.dropout = nn.Dropout(0)
 
         self.hidden_size = hidden_size
         self.init_weights()
