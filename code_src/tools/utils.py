@@ -158,38 +158,39 @@ def coco_eval(cf, model = None, epoch=0, test_mode = False, valid_mode = False):
     LMcriterion = nn.CrossEntropyLoss()
 
     valid_batch_losses = []
-    for i, (images, img_ids, _) in enumerate(data_loader):
-        
-        images = to_var(images)
-        sampler_output = model.sampler(images)
+    with torch.no_grad():
+        for i, (images, img_ids, _) in enumerate(data_loader):
 
-        generated_caption_idx = sampler_output[0]
-        if torch.cuda.is_available():
-            captions = generated_caption_idx.cpu().data.numpy()
-        else:
-            captions = generated_caption_idx.data.numpy()
-        
-        # Build caption based on Vocabulary and the '<end>' token
-        for image_idx in range(captions.shape[0]):
-            
-            sampled_ids = captions[image_idx]
-            sampled_caption = []
-            
-            for word_id in sampled_ids:
-                word = vocab.idx2word[word_id]
-                if word == '<end>':
-                    break
-                else:
-                    sampled_caption.append(word)
-            
-            sentence = ' '.join(sampled_caption)
-            
-            temp = {'image_id': int(img_ids[image_idx]), 'caption': sentence}
-            results.append(temp)
-        
-        # Disp evaluation process
-        if (i+1) % 10 == 0:
-            print('[%d/%d]' % ((i + 1), len(data_loader)))
+            images = to_var(images)
+            sampler_output = model.sampler(images)
+
+            generated_caption_idx = sampler_output[0]
+            if torch.cuda.is_available():
+                captions = generated_caption_idx.cpu().data.numpy()
+            else:
+                captions = generated_caption_idx.data.numpy()
+
+            # Build caption based on Vocabulary and the '<end>' token
+            for image_idx in range(captions.shape[0]):
+
+                sampled_ids = captions[image_idx]
+                sampled_caption = []
+
+                for word_id in sampled_ids:
+                    word = vocab.idx2word[word_id]
+                    if word == '<end>':
+                        break
+                    else:
+                        sampled_caption.append(word)
+
+                sentence = ' '.join(sampled_caption)
+
+                temp = {'image_id': int(img_ids[image_idx]), 'caption': sentence}
+                results.append(temp)
+
+            # Disp evaluation process
+            if (i+1) % 10 == 0:
+                print('[%d/%d]' % ((i + 1), len(data_loader)))
 
     print('#-----------------------Caption Generated-----------------------#')
 
