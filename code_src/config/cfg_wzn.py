@@ -11,7 +11,7 @@ val_anno_path               = 'code_src/data/annotations/karpathy_split_val.json
 test_anno_path              = 'code_src/data/annotations/karpathy_split_test.json'   # path for test annotation json file
 
 #--------------------attention_model--------------------#
-atten_model_name            = 'rnn_attention'    # ['adaptive','rnn_attention']
+atten_model_name            = 'adaptive'    # ['adaptive','rnn_attention']
 
 #--------------------train--------------------#
 trainOrnot                  = True
