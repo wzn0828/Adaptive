@@ -6,15 +6,16 @@ image_dir                   = '/home/wangzn/Datasets/ImageCaption/MSCOCO'
 captions_val_origin         = '/home/wangzn/Datasets/ImageCaption/MSCOCO/annotations/annotations_trainval2014/captions_val2014.json'
 captions_train_origin       = '/home/wangzn/Datasets/ImageCaption/MSCOCO/annotations/annotations_trainval2014/captions_train2014.json'
 splited_anno_path_prefix    = 'code_src/data/annotations/karpathy_split_'
-train_anno_path             = 'code_src/data/annotations/karpathy_split_train_overfit_onebatch.json'  # path for train annotation json file
-val_anno_path               = 'code_src/data/annotations/karpathy_split_val.json'    # path for validation annotation json file
+train_anno_path             = 'code_src/data/annotations/karpathy_split_train_overfit.json'  # path for train annotation json file
+val_anno_path               = 'code_src/data/annotations/karpathy_split_val_hyperparameter.json'    # path for validation annotation json file
 test_anno_path              = 'code_src/data/annotations/karpathy_split_test.json'   # path for test annotation json file
+train_eval_anno_path        = 'code_src/data/annotations/karpathy_split_train_eval_hyperparameter.json'
 
 #--------------------attention_model--------------------#
 atten_model_name            = 'rnn_attention'    # ['adaptive','rnn_attention']
 
 #--------------------train--------------------#
-trainOrnot                  = False
+trainOrnot                  = True
 train_crop_size             = 224        # size for randomly cropping images
 train_log_step              = 10                                                 # step size for printing log info
 train_random_seed           = 123                                                # random seed for model reproduction
@@ -27,7 +28,7 @@ train_lr_decay              = 40                                        # epoch 
 train_lr_decay_every        = 50                                        # decay learning rate half at every this number
 train_early_stop            = True
 train_figure_epoch          = 2
-train_evalOrnot             = False
+train_evalOrnot             = True
 train_overfit_check         = False
 
 # optimization
@@ -78,7 +79,7 @@ lstm_embed_size             = 256                                       # dimens
 lstm_hidden_size            = 512                                       # dimension of lstm hidden states
 
 # For eval_size > 30, it will cause cuda OOM error on Huckleberry
-eval_batch_size             = 20
+eval_batch_size             = 60
 # on cluster setup, 30 each x 4
 dataloader_num_workers      = 8
 
@@ -91,7 +92,7 @@ vacab_build_Ornot           = False
 vocab_threshold             = 5                                         # minimum word count threshold
 
 #--------------------KarpathySplit--------------------#
-KarpathySplitOrnot          = True
+KarpathySplitOrnot          = False
 num_val                     = 5000
 num_test                    = 5000
 num_train_eval              = 5000

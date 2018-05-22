@@ -11,6 +11,7 @@ from code_src.data.data_loader import get_loader
 import code_src.models as atten_models
 from torchvision import transforms
 from torch.nn.utils.rnn import pack_padded_sequence
+from tensorboardX import SummaryWriter
 
 
 def main_train(cf):
@@ -63,6 +64,7 @@ def main_train(cf):
     total_step = len(data_loader)
 
     cider_scores = []
+    cider_scores_train_eval = []
     best_cider = 0.0
     best_epoch = 0
 
@@ -139,6 +141,12 @@ def main_train(cf):
         figure_loss(cf, epoch, train_losses)
 
         if cf.train_evalOrnot:
+            # Evaluation on train_eval set
+            cider_train_eval = coco_eval(cf, model=adaptive, epoch=epoch, train_mode=True)
+            cider_scores_train_eval.append(cider_train_eval)
+            print('#---printing train_eval cider_scores---#')
+            print(cider_scores_train_eval)
+
             # Evaluation on validation set
             cider = coco_eval(cf, model=adaptive, epoch=epoch)
             cider_scores.append(cider)

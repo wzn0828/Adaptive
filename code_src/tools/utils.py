@@ -105,18 +105,19 @@ class CocoEvalLoader(data.Dataset):
 
 
 # MSCOCO Evaluation function on validation or test dataset
-def coco_eval(cf, model = None, epoch=0, test_mode = False, valid_mode = False):
+def coco_eval(cf, model=None, epoch=0, train_mode=False, test_mode=False, valid_mode=False):
     
     '''
     model: trained model to be evaluated
     cf: pre-set parameters
     epoch: epoch #, for disp purpose
-    test_mode: flag of test or validation of train
-    valid_mode: flag of just valid, not validataion of train
+    train_mode: flag of evaluate train_subset in training stage
+    test_mode: flag of test
+    valid_mode: flag of just valid, not validataion in training stage
     '''
 
     # test_mode and valid_mode can not be true at the same time
-    assert not(test_mode and valid_mode), "test_mode and valid_mode can not be true at the same time"
+    assert not(test_mode and valid_mode and train_mode), "test_mode and valid_mode and train_mode can not be true at the same time"
 
     # Load the vocabulary
     with open(cf.vocab_path, 'rb') as f:
@@ -141,6 +142,8 @@ def coco_eval(cf, model = None, epoch=0, test_mode = False, valid_mode = False):
     ann_path = cf.val_anno_path
     if test_mode:
         ann_path = cf.test_anno_path
+    elif train_mode:
+        ann_path = cf.train_eval_anno_path
 
     data_loader = torch.utils.data.DataLoader(CocoEvalLoader(cf.resized_image_dir, ann_path, transform),
                                               batch_size=cf.eval_batch_size, shuffle=False,
@@ -152,6 +155,9 @@ def coco_eval(cf, model = None, epoch=0, test_mode = False, valid_mode = False):
     print_string = '---------------------Start evaluation on MS-COCO dataset-----------------------'
     if test_mode:
         print_string = '---------------------Start test on MS-COCO dataset-----------------------'
+    elif train_mode:
+        print_string = '---------------------Start evaluating a subset of training data on MS-COCO dataset-----------------------'
+
     print(print_string)
 
     # Language Modeling Loss
@@ -200,14 +206,21 @@ def coco_eval(cf, model = None, epoch=0, test_mode = False, valid_mode = False):
     if test_mode:
         test_pretrained_model_name = cf.test_pretrained_model.replace('/', '_').split('.')[0]
         resFile = os.path.join(cf.exp_dir, test_pretrained_model_name + '.json')
+    elif train_mode:
+        cf.train_eval_result_path = os.path.join(cf.exp_dir, 'train_eval_results')
+        if not os.path.exists(cf.train_eval_result_path):
+            os.makedirs(cf.train_eval_result_path)
+        filename = 'train_eval-' + str(epoch) + '.json'
+        resFile = os.path.join(cf.train_eval_result_path, filename)
     else:
         cf.val_result_path = os.path.join(cf.exp_dir, 'val_results')
         if not os.path.exists(cf.val_result_path):
             os.makedirs(cf.val_result_path)
-        filename = 'mixed-' + str(epoch) + '.json'
+        filename = 'validation-' + str(epoch) + '.json'
         if valid_mode:
             filename = cf.valid_pretrained_model.replace('/', '_').split('.')[0] + '.json'
         resFile = os.path.join(cf.val_result_path, filename)
+
 
     json.dump(results, open(resFile, 'w'))
 
@@ -225,6 +238,8 @@ def coco_eval(cf, model = None, epoch=0, test_mode = False, valid_mode = False):
         print_string = '-----------Evaluation performance on MS-COCO test dataset for pretrained_model: %s----------' % cf.test_pretrained_model
     elif valid_mode:
         print_string = '-----------Evaluation performance on MS-COCO valid dataset for pretrained_model: %s----------' % cf.valid_pretrained_model
+    elif train_mode:
+        print_string = '-----------Evaluation performance on MS-COCO train_eval dataset for  Epoch %d----------' % epoch
     print(print_string)
 
     for metric, score in cocoEval.eval.items():
