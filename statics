@@ -2,9 +2,11 @@
 2\ len(train_images) = 113287, len(train_annos) = 566748;
 3\ len(val_images) = 5000;
 4\ len(test_images) = 5000;
-    len(train_overfit_images)=20;
-    len(train_hyperparameter_images)=1000;
-    len(val_hyperparameter_images)=500
+    len(train_eval_images) = 5000;
+    len(train_overfit_images)=20;len(train_overfit_annos)=20;
+    len(train_hyperparameter_images)=5000;
+    len(val_hyperparameter_images)=1000;
+    len(train_eval_hyperparameter_images)=1000;
     len(train_overfit_onebatch_annos)=20;
 5\ captionsOfTrain.maxlength=52;
 6\ captionsOfTrain.minlength=5;
