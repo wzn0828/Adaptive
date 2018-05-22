@@ -57,7 +57,7 @@ class Atten(nn.Module):
 
         # lstm initialize, temporarily zero
         # use lstm to integrate weighted feature V_weighted
-        self.lstm.flatten_parameters()
+        # self.lstm.flatten_parameters()
         output_h_t, h_c = self.lstm(V_weighted.view(-1, V_weighted.size(2), V_weighted.size(3)), None)    # size of output_h_t is [-1,V_weighted.size(2),cf.rnn_attention_hiddensize]
         # extract the last hidden output
         h_T = h_c[0]    # size of h_T is [num_layers * num_directions, -1, self.rnn_attention_hiddensize]
@@ -99,23 +99,7 @@ class AdaptiveBlock(nn.Module):
         self.mlp.bias.data.fill_(0)
 
     def forward(self, x, hiddens, cells, V):
-        # x's size is [cf.train_batch_size, maxlength(captions), 2*cf.lstm_embed_size]
-        # hiddens' size is [cf.train_batch_size, maxlength(captions), cf.lstm_hidden_size]
-        # cells' size is [cf.train_batch_size, maxlength(captions), cf.lstm_hidden_size]
 
-        # # hidden for sentinel should be h0-ht-1
-        # h0 = self.init_hidden(x.size(0))[0].transpose(0, 1)     # size of [cf.train_batch_size, 1, cf.lstm_hidden_size]
-
-        # # h_(t-1): B x seq x hidden_size ( 0 - t-1 )
-        # if hiddens.size(1) > 1:
-        #     hiddens_t_1 = torch.cat((h0, hiddens[:, :-1, :]), dim=1)    # size of [cf.train_batch_size, maxlength(captions), cf.lstm_hidden_size]
-        # else:
-        #     hiddens_t_1 = h0
-
-        # # Get Sentinel embedding, it's calculated blockly
-        # sentinel = self.sentinel(x, hiddens_t_1, cells)     # size of [cf.train_batch_size, maxlength(captions), cf.lstm_hidden_size]
-
-        # Get C_t, Spatial attention, sentinel score
         F_T, atten_weights = self.atten(V, hiddens)   # size of F_T is [cf.train_batch_size, maxlength(captions), cf.rnn_attention_hiddensize]
                                                       # size of atten_weights is [cf.train_batch_size, maxlength(captions),49]
 
