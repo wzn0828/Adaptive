@@ -26,9 +26,15 @@ def main_KarpathySplit(cf):
     dataset['test'] = imgs[num_val: num_val + num_test]
     dataset['train'] = imgs[num_val + num_test:]
 
+    # subset for evaluation of train data
+    dataset['train_eval'] = [dataset['train'][i] for i in sorted(sample(range(len(dataset['train'])), cf.num_train_eval))]
+
+
     # split subset for hyperparameter, tinyset for overfitting
     dataset['val_hyperparameter'] = [dataset['val'][i] for i in sorted(sample(range(len(dataset['val'])), cf.num_val_hyperparameter))]
     dataset['train_hyperparameter'] = [dataset['train'][i] for i in sorted(sample(range(len(dataset['train'])), cf.num_train_hyperparameter))]
+    dataset['train_eval_hyperparameter'] = [dataset['train_hyperparameter'][i] for i in sorted(sample(range(len(dataset['train_hyperparameter'])), cf.num_train_eval_hyperparameter))]
+
     dataset['train_overfit'] = [dataset['train'][i] for i in sorted(sample(range(len(dataset['train'])), cf.num_train_overfit))]
 
     # Group by image ids

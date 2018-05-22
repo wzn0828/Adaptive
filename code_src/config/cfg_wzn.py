@@ -11,24 +11,24 @@ val_anno_path               = 'code_src/data/annotations/karpathy_split_val.json
 test_anno_path              = 'code_src/data/annotations/karpathy_split_test.json'   # path for test annotation json file
 
 #--------------------attention_model--------------------#
-atten_model_name            = 'adaptive'    # ['adaptive','rnn_attention']
+atten_model_name            = 'rnn_attention'    # ['adaptive','rnn_attention']
 
 #--------------------train--------------------#
-trainOrnot                  = True
+trainOrnot                  = False
 train_crop_size             = 224        # size for randomly cropping images
 train_log_step              = 10                                                 # step size for printing log info
 train_random_seed           = 123                                                # random seed for model reproduction
 train_pretrained            = False         # use train_pretrained_model or not
 train_pretrained_model      = 'Experiments/Train_adaptive_sgd_sgd_cnn_start_layer_5_cnn_start_epoch_20___2018-05-17-16-37-45/trained_models/adaptive-1.pkl'      # [''|'path'] path of used model'] start from checkpoint or scratch, '' represents start from scratch
 train_num_epochs            = 200                                        # the maximum epochs
-train_batch_size            = 25                                        # on cluster setup, 60 each x 4 for Huckle server
+train_batch_size            = 30                                        # on cluster setup, 60 each x 4 for Huckle server
 train_clip                  = 0.1                                       # Gradient clipping for gradient exploding problem in LSTM
 train_lr_decay              = 40                                        # epoch at which to start lr decay
 train_lr_decay_every        = 50                                        # decay learning rate half at every this number
 train_early_stop            = True
 train_figure_epoch          = 2
 train_evalOrnot             = False
-train_overfit_check         = True
+train_overfit_check         = False
 
 # optimization
 # CNN fine-tuning
@@ -91,12 +91,16 @@ vacab_build_Ornot           = False
 vocab_threshold             = 5                                         # minimum word count threshold
 
 #--------------------KarpathySplit--------------------#
-KarpathySplitOrnot          = False
+KarpathySplitOrnot          = True
 num_val                     = 5000
 num_test                    = 5000
+num_train_eval              = 5000
+
 num_train_overfit           = 20
-num_train_hyperparameter    = 1000
-num_val_hyperparameter      = 500
+
+num_train_hyperparameter    = 5000
+num_train_eval_hyperparameter = 1000
+num_val_hyperparameter      = 1000
 
 
 #--------------------rnn_attention--------------------#
