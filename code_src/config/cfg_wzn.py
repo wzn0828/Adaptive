@@ -34,10 +34,10 @@ train_overfit_check         = False
 # optimization
 # CNN fine-tuning
 opt_fine_tune_cnn_start_layer   = 5                                         # CNN fine-tuning layers from: [0-7]
-opt_fine_tune_cnn_start_epoch   = 20                                        # start fine-tuning CNN after
+opt_fine_tune_cnn_start_epoch   = 5                                        # start fine-tuning CNN after
 
 # Optimizer parameter of rnn
-opt_rnn_optimization                = 'adam'  #['adam','sgd','lbfgs']
+opt_rnn_optimization                = 'lbfgs'  #['adam','sgd','lbfgs']
 opt_rnn_adam_alpha                  = 0.9                                       # alpha in Adam
 opt_rnn_adam_beta                   = 0.999                                     # beta in Adam
 opt_rnn_adam_learning_rate          = 5e-6                                    # learning rate for the whole model
@@ -47,10 +47,13 @@ opt_rnn_sgd_learning_rate           = 5e-4
 opt_rnn_sgd_momentum                = 0.8
 opt_rnn_sgd_weight_decay            = 0
 
+opt_rnn_lbfgs_lr                    = 0.8
+opt_rnn_lbfgs_max_iter              = 20
+opt_rnn_lbfgs_history               = 50
 
 
 # Optimizer parameter of cnn
-opt_cnn_optimization            = 'adam'  #['adam','sgd']
+opt_cnn_optimization            = 'lbfgs'  #['adam','sgd','lbfgs']
 opt_cnn_adam_alpha              = 0.9                                       # alpha in Adam
 opt_cnn_adam_beta               = 0.999
 opt_cnn_adam_learning_rate      = 5e-5
@@ -60,9 +63,9 @@ opt_cnn_sgd_learning_rate       = 1e-5
 opt_cnn_sgd_momentum            = 0.99
 opt_cnn_sgd_weight_decay        = 0
 
-# Optimizer L-BFGS, for overfitting tiny dataset
-
-
+opt_cnn_lbfgs_lr                = 0.1
+opt_cnn_lbfgs_max_iter          = 20
+opt_cnn_lbfgs_history           = 50
 
 
 #--------------------test--------------------#

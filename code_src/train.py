@@ -8,11 +8,11 @@ import pickle
 import matplotlib.pyplot as plt
 from code_src.tools.utils import coco_eval, to_var
 from code_src.data.data_loader import get_loader
-import code_src.models as atten_models
 from torchvision import transforms
 from torch.nn.utils.rnn import pack_padded_sequence
 from tensorboardX import SummaryWriter
-
+writer = SummaryWriter()
+from code_src.models.model_factory import get_model, get_encoder_optimizer, get_decoder_optimizer
 
 def main_train(cf):
     # To reproduce training results
@@ -46,18 +46,18 @@ def main_train(cf):
                              shuffle=True, num_workers=cf.dataloader_num_workers)
 
     # build model
-    adaptive, start_epoch, params = get_model(cf)
+    model, start_epoch = get_model(cf)
 
-    # Constructing CNN parameters for optimization, only fine-tuning higher layers
-    cnn_optimizer = get_cnn_optimizer(adaptive, cf)
+    # Constructing optimizer for encoder and decoder
+    encoder_optimizer, encoder_lbfgs_flag = get_encoder_optimizer(cf, model)
+    decoder_optimizer, decoder_lbfgs_flag = get_decoder_optimizer(cf, model)
 
     # Language Modeling Loss
     LMcriterion = nn.CrossEntropyLoss()
 
-
     # Change to GPU mode if available
     if torch.cuda.is_available():
-        adaptive.cuda()
+        model.cuda()
         LMcriterion.cuda()
 
     # Train the Models
@@ -77,7 +77,6 @@ def main_train(cf):
 
         # print('Learning Rate for Epoch %d: %.6f' % (epoch, learning_rate))
 
-        optimizer = get_optimizer(cf, params)
 
         # Language Modeling Training
         print('------------------Training for Epoch %d----------------' % (epoch))
@@ -92,65 +91,77 @@ def main_train(cf):
             targets = pack_padded_sequence(captions[:, 1:], lengths, batch_first=True)[0]       # size of sum(lengths)
 
             # preparation for train
-            adaptive.train()
-            adaptive.zero_grad()
-            optimizer.zero_grad()
+            model.train()
+            model.zero_grad()
+            encoder_optimizer.zero_grad()
+            decoder_optimizer.zero_grad()
+
+            # Gradient clipping for gradient exploding problem in LSTM
+            for p in model.decoder.LSTM.parameters():
+                p.data.clamp_(-cf.train_clip, cf.train_clip)
 
             # check overfit tiny dataset
             if cf.train_overfit_check:
-                params, adaptive = L_BFGS(params, adaptive, images, captions, lengths, targets, LMcriterion, cf, epoch, i, total_step, train_batch_losses)
+                params, model = L_BFGS(params, model, images, captions, lengths, targets, LMcriterion, cf, epoch, i, total_step, train_batch_losses)
                 continue
 
 
-            # Forward
-            packed_scores = adaptive(images, captions, lengths)     # size of packed_scores[0] is [sum(lengths), 10141(vocab_size)]
+            if decoder_lbfgs_flag==False or (epoch > cf.opt_fine_tune_cnn_start_epoch and encoder_lbfgs_flag==False):
+                # Forward
+                packed_scores = model(images, captions, lengths)  # size of packed_scores[0] is [sum(lengths), 10141(vocab_size)]
+                # Compute loss and backprop
+                loss = LMcriterion(packed_scores[0], targets)
+                loss_data = loss.data.cpu().item()
+                loss.backward()
 
-            # Compute loss and backprop
-            loss = LMcriterion(packed_scores[0], targets)
-            train_batch_losses.append(loss.data.cpu().numpy().tolist())
-            loss.backward()
+            # decoder optimize
+            if decoder_lbfgs_flag:
+                loss_data = L_BFGS_optimize(decoder_optimizer, model, images, captions, lengths, targets, LMcriterion)
+            else:
+                decoder_optimizer.step()
 
-            # Gradient clipping for gradient exploding problem in LSTM
-            for p in adaptive.decoder.LSTM.parameters():
-                p.data.clamp_(-cf.train_clip, cf.train_clip)
-
-            # Optimize
-            optimizer.step()
-            # Start CNN fine-tuning
+            # encoder optimize
             if epoch > cf.opt_fine_tune_cnn_start_epoch:
-                cnn_optimizer.step()
+                if encoder_lbfgs_flag:
+                    loss_data = L_BFGS_optimize(encoder_optimizer, model, images, captions, lengths, targets,
+                                                        LMcriterion)
+                else:
+                    encoder_optimizer.step()
+
+            train_batch_losses.append(loss_data)
 
             # Print log info
             if i % cf.train_log_step == 0:
                 print('Epoch [%d/%d], Step [%d/%d], CrossEntropy Loss: %.4f, Perplexity: %5.4f' % (epoch,
                                                                                                    cf.train_num_epochs,
                                                                                                    i, total_step,
-                                                                                                   loss.data,
-                                                                                                   np.exp(
-                                                                                                       loss.data)))
+                                                                                                   loss_data,
+                                                                                                   np.exp(loss_data)))
 
         # Save the Adaptive Attention model after each epoch
-        torch.save(adaptive.state_dict(),
+        torch.save(model.state_dict(),
                    os.path.join(cf.trained_model_path,
-                                'adaptive-%d.pkl' % (epoch)))
+                                'attention_model-%d.pkl' % (epoch)))
 
         train_loss = np.array(train_batch_losses).mean()
         print('Train Loss', epoch, train_loss)
         train_losses.append(train_loss)
+        print('Train Losses:')
+        print(train_losses)
         # plot figure losses
         figure_loss(cf, epoch, train_losses)
 
         if cf.train_evalOrnot:
             # Evaluation on train_eval set
-            cider_train_eval = coco_eval(cf, model=adaptive, epoch=epoch, train_mode=True)
+            cider_train_eval = coco_eval(cf, model=model, epoch=epoch, train_mode=True)
             cider_scores_train_eval.append(cider_train_eval)
             print('#---printing train_eval cider_scores---#')
             print(cider_scores_train_eval)
 
             # Evaluation on validation set
-            cider = coco_eval(cf, model=adaptive, epoch=epoch)
+            cider = coco_eval(cf, model=model, epoch=epoch)
             cider_scores.append(cider)
-            print('#---printing cider_scores---#')
+            print('#---printing validation cider_scores---#')
             print(cider_scores)
 
             # record the best cider and best epoch
@@ -175,23 +186,11 @@ def L_BFGS(params, adaptive, images, captions, lengths, targets, LMcriterion, cf
                                  lengths)  # size of packed_scores[0] is [sum(lengths), 10141(vocab_size)]
         # Compute loss and backprop
         loss = LMcriterion(packed_scores[0], targets)
-        train_batch_losses.append(loss.data.cpu().numpy().tolist())
+        train_batch_losses.append(loss.data.cpu().item())
         loss.backward()
         return loss
     optimizer.step(closure)
 
-    # Gradient clipping for gradient exploding problem in LSTM
-    for p in adaptive.decoder.LSTM.parameters():
-        p.data.clamp_(-cf.train_clip, cf.train_clip)
-
-            # Optimize
-
-            # # Start CNN fine-tuning
-            # if epoch > cf.opt_fine_tune_cnn_start_epoch:
-            #     cnn_optimizer.step()
-
-            # Print log info
-            # if step % cf.train_log_step == 0:
     print('Epoch [%d/%d], Step [%d/%d], CrossEntropy Loss: %.4f, Perplexity: %5.4f' % (epoch,
                                                                                        cf.train_num_epochs,
                                                                                        step, total_step,
@@ -200,36 +199,25 @@ def L_BFGS(params, adaptive, images, captions, lengths, targets, LMcriterion, cf
                                                                                            train_batch_losses[-1])))
     return params, adaptive
 
-def get_model(cf):
-    # build model
-    if cf.atten_model_name == 'adaptive':
-        adaptive = atten_models.base_adaptive.Encoder2Decoder(cf.lstm_embed_size, cf.vocab_length, cf.lstm_hidden_size)
-    elif cf.atten_model_name == 'rnn_attention':
-        adaptive = atten_models.rnn_attention.Encoder2Decoder(cf)
 
-    # load pretrained model or not, and get start_epoch
-    if cf.train_pretrained:
-        adaptive.load_state_dict(torch.load(cf.train_pretrained_model))
-        # Get starting epoch #, note that model is named as '...your path to model/algoname-epoch#.pkl'
-        # A little messy here.
-        start_epoch = int(cf.train_pretrained_model.split('/')[-1].split('-')[1].split('.')[0]) + 1
-    else:
-        start_epoch = 1
+def L_BFGS_optimize(optimizer, model, images, captions, lengths, targets, LMcriterion):
+    model.zero_grad()
+    optimizer.zero_grad()
 
-    # Other parameter optimization
-    params = list(adaptive.encoder.affine_a.parameters()) + list(adaptive.encoder.affine_b.parameters()) \
-             + list(adaptive.decoder.parameters())
+    batch_losses = []
+    def closure():
+        # Forward
+        optimizer.zero_grad()
+        packed_scores = model(images, captions,
+                                 lengths)  # size of packed_scores[0] is [sum(lengths), 10141(vocab_size)]
+        # Compute loss and backprop
+        loss = LMcriterion(packed_scores[0], targets)
+        batch_losses.append(loss.data.cpu().item())
+        loss.backward()
+        return loss
+    optimizer.step(closure)
 
-    return adaptive, start_epoch, params
-
-
-def get_optimizer(cf, params):
-    if cf.opt_rnn_optimization == 'adam':
-        optimizer = torch.optim.Adam(params, lr=cf.opt_rnn_adam_learning_rate, betas=(cf.opt_rnn_adam_alpha, cf.opt_rnn_adam_beta), weight_decay=cf.opt_rnn_adam_weight_decay)
-    elif cf.opt_rnn_optimization == 'sgd':
-        optimizer = torch.optim.SGD(params, lr=cf.opt_rnn_sgd_learning_rate, momentum=cf.opt_rnn_sgd_momentum, nesterov=True, weight_decay=cf.opt_rnn_sgd_weight_decay)
-
-    return optimizer
+    return batch_losses[0]
 
 
 def lr_decay(cf, epoch, learning_rate):
@@ -249,25 +237,6 @@ def lr_decay(cf, epoch, learning_rate):
         learning_rate = cf.adam_learning_rate * decay_factor
 
     return learning_rate
-
-
-def get_cnn_optimizer(adaptive, cf):
-    """
-    Constructing CNN parameters for optimization, only fine-tuning higher layers
-    :param adaptive: the encoder2decoder model
-    :param cf: config file
-    :return: parameters of cnn needed to be optimized
-    """
-    cnn_subs = list(adaptive.encoder.resnet_conv.children())[cf.opt_fine_tune_cnn_start_layer:]
-    cnn_params = [list(sub_module.parameters()) for sub_module in cnn_subs]
-    cnn_params = [item for sublist in cnn_params for item in sublist]
-
-    if cf.opt_cnn_optimization == 'adam':
-        cnn_optimizer = torch.optim.Adam(cnn_params, lr=cf.opt_cnn_adam_learning_rate, betas=(cf.opt_cnn_adam_alpha, cf.opt_cnn_adam_beta))
-    elif cf.opt_cnn_optimization == 'sgd':
-        cnn_optimizer = torch.optim.SGD(cnn_params, lr=cf.opt_cnn_sgd_learning_rate, momentum=cf.opt_cnn_sgd_momentum, nesterov=True)
-
-    return cnn_optimizer
 
 
 def early_stop_Ornot(cf, cider_scores, best_cider):
