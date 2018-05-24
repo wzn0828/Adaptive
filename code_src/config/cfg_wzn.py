@@ -22,19 +22,19 @@ train_random_seed           = 123                                               
 train_pretrained            = False         # use train_pretrained_model or not
 train_pretrained_model      = 'Experiments/Train_adaptive_sgd_sgd_cnn_start_layer_5_cnn_start_epoch_20___2018-05-17-16-37-45/trained_models/adaptive-1.pkl'      # [''|'path'] path of used model'] start from checkpoint or scratch, '' represents start from scratch
 train_num_epochs            = 200                                        # the maximum epochs
-train_batch_size            = 30                                        # on cluster setup, 60 each x 4 for Huckle server
+train_batch_size            = 20                                        # on cluster setup, 60 each x 4 for Huckle server
 train_clip                  = 0.1                                       # Gradient clipping for gradient exploding problem in LSTM
 train_lr_decay              = 40                                        # epoch at which to start lr decay
 train_lr_decay_every        = 50                                        # decay learning rate half at every this number
 train_early_stop            = True
 train_figure_epoch          = 2
-train_evalOrnot             = True
-train_overfit_check         = False
+train_evalOrnot             = False
+
 
 # optimization
 # CNN fine-tuning
 opt_fine_tune_cnn_start_layer   = 5                                         # CNN fine-tuning layers from: [0-7]
-opt_fine_tune_cnn_start_epoch   = 5                                        # start fine-tuning CNN after
+opt_fine_tune_cnn_start_epoch   = 20                                        # start fine-tuning CNN after
 
 # Optimizer parameter of rnn
 opt_rnn_optimization                = 'lbfgs'  #['adam','sgd','lbfgs']
@@ -82,7 +82,7 @@ lstm_embed_size             = 256                                       # dimens
 lstm_hidden_size            = 512                                       # dimension of lstm hidden states
 
 # For eval_size > 30, it will cause cuda OOM error on Huckleberry
-eval_batch_size             = 60
+eval_batch_size             = 20
 # on cluster setup, 30 each x 4
 dataloader_num_workers      = 8
 

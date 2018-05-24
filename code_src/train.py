@@ -11,7 +11,7 @@ from code_src.data.data_loader import get_loader
 from torchvision import transforms
 from torch.nn.utils.rnn import pack_padded_sequence
 from tensorboardX import SummaryWriter
-writer = SummaryWriter()
+# writer = SummaryWriter()
 from code_src.models.model_factory import get_model, get_encoder_optimizer, get_decoder_optimizer
 
 def main_train(cf):
@@ -49,8 +49,8 @@ def main_train(cf):
     model, start_epoch = get_model(cf)
 
     # Constructing optimizer for encoder and decoder
-    encoder_optimizer, encoder_lbfgs_flag = get_encoder_optimizer(cf, model)
-    decoder_optimizer, decoder_lbfgs_flag = get_decoder_optimizer(cf, model)
+    encoder_optimizer = get_encoder_optimizer(cf, model)
+    decoder_optimizer = get_decoder_optimizer(cf, model)
 
     # Language Modeling Loss
     LMcriterion = nn.CrossEntropyLoss()
@@ -74,9 +74,7 @@ def main_train(cf):
 
         # # Start Learning Rate Decay
         # learning_rate = lr_decay(cf, epoch, learning_rate)
-
         # print('Learning Rate for Epoch %d: %.6f' % (epoch, learning_rate))
-
 
         # Language Modeling Training
         print('------------------Training for Epoch %d----------------' % (epoch))
@@ -92,41 +90,18 @@ def main_train(cf):
 
             # preparation for train
             model.train()
-            model.zero_grad()
-            encoder_optimizer.zero_grad()
-            decoder_optimizer.zero_grad()
 
             # Gradient clipping for gradient exploding problem in LSTM
             for p in model.decoder.LSTM.parameters():
                 p.data.clamp_(-cf.train_clip, cf.train_clip)
 
-            # check overfit tiny dataset
-            if cf.train_overfit_check:
-                params, model = L_BFGS(params, model, images, captions, lengths, targets, LMcriterion, cf, epoch, i, total_step, train_batch_losses)
-                continue
-
-
-            if decoder_lbfgs_flag==False or (epoch > cf.opt_fine_tune_cnn_start_epoch and encoder_lbfgs_flag==False):
-                # Forward
-                packed_scores = model(images, captions, lengths)  # size of packed_scores[0] is [sum(lengths), 10141(vocab_size)]
-                # Compute loss and backprop
-                loss = LMcriterion(packed_scores[0], targets)
-                loss_data = loss.data.cpu().item()
-                loss.backward()
-
             # decoder optimize
-            if decoder_lbfgs_flag:
-                loss_data = L_BFGS_optimize(decoder_optimizer, model, images, captions, lengths, targets, LMcriterion)
-            else:
-                decoder_optimizer.step()
+            loss_data = model_optimize(decoder_optimizer, model, images, captions, lengths, targets, LMcriterion)
 
             # encoder optimize
             if epoch > cf.opt_fine_tune_cnn_start_epoch:
-                if encoder_lbfgs_flag:
-                    loss_data = L_BFGS_optimize(encoder_optimizer, model, images, captions, lengths, targets,
+                loss_data = model_optimize(encoder_optimizer, model, images, captions, lengths, targets,
                                                         LMcriterion)
-                else:
-                    encoder_optimizer.step()
 
             train_batch_losses.append(loss_data)
 
@@ -177,30 +152,8 @@ def main_train(cf):
     print('Model of best epoch #: %d with CIDEr score %.2f' % (best_epoch, best_cider))
 
 
-def L_BFGS(params, adaptive, images, captions, lengths, targets, LMcriterion, cf, epoch, step, total_step, train_batch_losses):
-    optimizer = torch.optim.LBFGS(params, lr=0.8)
-    def closure():
-        # Forward
-        optimizer.zero_grad()
-        packed_scores = adaptive(images, captions,
-                                 lengths)  # size of packed_scores[0] is [sum(lengths), 10141(vocab_size)]
-        # Compute loss and backprop
-        loss = LMcriterion(packed_scores[0], targets)
-        train_batch_losses.append(loss.data.cpu().item())
-        loss.backward()
-        return loss
-    optimizer.step(closure)
+def model_optimize(optimizer, model, images, captions, lengths, targets, LMcriterion):
 
-    print('Epoch [%d/%d], Step [%d/%d], CrossEntropy Loss: %.4f, Perplexity: %5.4f' % (epoch,
-                                                                                       cf.train_num_epochs,
-                                                                                       step, total_step,
-                                                                                       train_batch_losses[-1],
-                                                                                       np.exp(
-                                                                                           train_batch_losses[-1])))
-    return params, adaptive
-
-
-def L_BFGS_optimize(optimizer, model, images, captions, lengths, targets, LMcriterion):
     model.zero_grad()
     optimizer.zero_grad()
 
@@ -218,6 +171,8 @@ def L_BFGS_optimize(optimizer, model, images, captions, lengths, targets, LMcrit
     optimizer.step(closure)
 
     return batch_losses[0]
+
+
 
 
 def lr_decay(cf, epoch, learning_rate):
