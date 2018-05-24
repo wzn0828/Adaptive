@@ -34,7 +34,7 @@ train_evalOrnot             = False
 # optimization
 # CNN fine-tuning
 opt_fine_tune_cnn_start_layer   = 5                                         # CNN fine-tuning layers from: [0-7]
-opt_fine_tune_cnn_start_epoch   = 20                                        # start fine-tuning CNN after
+opt_fine_tune_cnn_start_epoch   = 5                                        # start fine-tuning CNN after
 
 # Optimizer parameter of rnn
 opt_rnn_optimization                = 'lbfgs'  #['adam','sgd','lbfgs']
