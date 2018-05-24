@@ -49,7 +49,7 @@ def main_train(cf):
     model, start_epoch = get_model(cf)
 
     # Constructing optimizer for encoder and decoder
-    encoder_optimizer = get_encoder_optimizer(cf, model)
+    encoder_optimizer, encoder_lbfgs_flag = get_encoder_optimizer(cf, model)
     decoder_optimizer = get_decoder_optimizer(cf, model)
 
     # Language Modeling Loss
@@ -100,8 +100,10 @@ def main_train(cf):
 
             # encoder optimize
             if epoch > cf.opt_fine_tune_cnn_start_epoch:
-                loss_data = model_optimize(encoder_optimizer, model, images, captions, lengths, targets,
-                                                        LMcriterion)
+                if encoder_lbfgs_flag:
+                    model_optimize(encoder_optimizer, model, images, captions, lengths, targets, LMcriterion)
+                else:
+                    encoder_optimizer.step()
 
             train_batch_losses.append(loss_data)
 
@@ -154,12 +156,10 @@ def main_train(cf):
 
 def model_optimize(optimizer, model, images, captions, lengths, targets, LMcriterion):
 
-    model.zero_grad()
-    optimizer.zero_grad()
-
     batch_losses = []
     def closure():
         # Forward
+        model.zero_grad()
         optimizer.zero_grad()
         packed_scores = model(images, captions,
                                  lengths)  # size of packed_scores[0] is [sum(lengths), 10141(vocab_size)]

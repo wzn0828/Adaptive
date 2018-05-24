@@ -78,7 +78,9 @@ def get_encoder_optimizer(cf, model):
     cnn_params = get_encoder_parameters(cf, model)
     encoder_optimizer = get_encoder_optimizer_param(cf, cnn_params)
 
-    return encoder_optimizer
+    encoder_lbfgs_flag = str(type(encoder_optimizer)).__contains__('lbfgs')
+
+    return encoder_optimizer, encoder_lbfgs_flag
 
 
 def get_decoder_optimizer(cf, model):

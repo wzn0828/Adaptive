@@ -12,7 +12,7 @@ test_anno_path              = 'code_src/data/annotations/karpathy_split_test.jso
 train_eval_anno_path        = 'code_src/data/annotations/karpathy_split_train_eval_hyperparameter.json'
 
 #--------------------attention_model--------------------#
-atten_model_name            = 'rnn_attention'    # ['adaptive','rnn_attention']
+atten_model_name            = 'adaptive'    # ['adaptive','rnn_attention']
 
 #--------------------train--------------------#
 trainOrnot                  = True
@@ -20,7 +20,7 @@ train_crop_size             = 224        # size for randomly cropping images
 train_log_step              = 10                                                 # step size for printing log info
 train_random_seed           = 123                                                # random seed for model reproduction
 train_pretrained            = False         # use train_pretrained_model or not
-train_pretrained_model      = 'Experiments/Train_adaptive_sgd_sgd_cnn_start_layer_5_cnn_start_epoch_20___2018-05-17-16-37-45/trained_models/adaptive-1.pkl'      # [''|'path'] path of used model'] start from checkpoint or scratch, '' represents start from scratch
+train_pretrained_model      = 'Experiments/Train_adaptive_adam_adam_cnn_start_layer_5_cnn_start_epoch_5___2018-05-24-17-14-31/trained_models/attention_model-75.pkl'      # [''|'path'] path of used model'] start from checkpoint or scratch, '' represents start from scratch
 train_num_epochs            = 200                                        # the maximum epochs
 train_batch_size            = 20                                        # on cluster setup, 60 each x 4 for Huckle server
 train_clip                  = 0.1                                       # Gradient clipping for gradient exploding problem in LSTM
@@ -34,17 +34,17 @@ train_evalOrnot             = False
 # optimization
 # CNN fine-tuning
 opt_fine_tune_cnn_start_layer   = 5                                         # CNN fine-tuning layers from: [0-7]
-opt_fine_tune_cnn_start_epoch   = 5                                        # start fine-tuning CNN after
+opt_fine_tune_cnn_start_epoch   = 20                                        # start fine-tuning CNN after
 
 # Optimizer parameter of rnn
 opt_rnn_optimization                = 'lbfgs'  #['adam','sgd','lbfgs']
 opt_rnn_adam_alpha                  = 0.9                                       # alpha in Adam
 opt_rnn_adam_beta                   = 0.999                                     # beta in Adam
-opt_rnn_adam_learning_rate          = 5e-6                                    # learning rate for the whole model
+opt_rnn_adam_learning_rate          = 5e-4                                    # learning rate for the whole model
 opt_rnn_adam_weight_decay           = 0
 
-opt_rnn_sgd_learning_rate           = 5e-4
-opt_rnn_sgd_momentum                = 0.8
+opt_rnn_sgd_learning_rate           = 5e-2
+opt_rnn_sgd_momentum                = 0.3
 opt_rnn_sgd_weight_decay            = 0
 
 opt_rnn_lbfgs_lr                    = 0.8
@@ -53,17 +53,17 @@ opt_rnn_lbfgs_history               = 50
 
 
 # Optimizer parameter of cnn
-opt_cnn_optimization            = 'lbfgs'  #['adam','sgd','lbfgs']
+opt_cnn_optimization            = 'adam'  #['adam','sgd','lbfgs']
 opt_cnn_adam_alpha              = 0.9                                       # alpha in Adam
 opt_cnn_adam_beta               = 0.999
-opt_cnn_adam_learning_rate      = 5e-5
+opt_cnn_adam_learning_rate      = 1e-5
 opt_cnn_adam_weight_decay       = 0
 
-opt_cnn_sgd_learning_rate       = 1e-5
+opt_cnn_sgd_learning_rate       = 4e-5
 opt_cnn_sgd_momentum            = 0.99
 opt_cnn_sgd_weight_decay        = 0
 
-opt_cnn_lbfgs_lr                = 0.1
+opt_cnn_lbfgs_lr                = 0.01
 opt_cnn_lbfgs_max_iter          = 20
 opt_cnn_lbfgs_history           = 50
 
