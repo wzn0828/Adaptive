@@ -60,7 +60,7 @@ def main_train(cf):
         model.cuda()
         LMcriterion.cuda()
 
-    # Train the Models
+    # some statics during training
     total_step = len(data_loader)
 
     cider_scores = []
@@ -69,7 +69,12 @@ def main_train(cf):
     best_epoch = 0
 
     train_losses = []
+
+    # tensorboard plot
+    writer = SummaryWriter()
+
     # Start Training
+    global_n_iter = 0
     for epoch in range(start_epoch, cf.train_num_epochs + 1):
 
         # # Start Learning Rate Decay
@@ -77,8 +82,7 @@ def main_train(cf):
         # print('Learning Rate for Epoch %d: %.6f' % (epoch, learning_rate))
 
         # Language Modeling Training
-        print('------------------Training for Epoch %d----------------' % (epoch))
-
+        print('#------------------Training for Epoch %d----------------#' % (epoch))
         train_batch_losses = []
         for i, (images, captions, lengths, _, _) in enumerate(data_loader):
 
@@ -115,12 +119,21 @@ def main_train(cf):
                                                                                                    loss_data,
                                                                                                    np.exp(loss_data)))
 
+            # histogram of parameters
+            global_n_iter += 1
+            if global_n_iter % 3 == 0:
+                for name, param in model.named_parameters():
+                    if 'resnet' not in name:
+                        writer.add_histogram(name.replace('.', '/'), param, global_n_iter, bins='auto')
+
+
         # Save the Adaptive Attention model after each epoch
         torch.save(model.state_dict(),
                    os.path.join(cf.trained_model_path,
                                 'attention_model-%d.pkl' % (epoch)))
 
         train_loss = np.array(train_batch_losses).mean()
+        writer.add_scalar('train loss per epoch', train_loss, epoch)
         print('Train Loss', epoch, train_loss)
         train_losses.append(train_loss)
         print('Train Losses:')
@@ -141,6 +154,9 @@ def main_train(cf):
             print('#---printing validation cider_scores---#')
             print(cider_scores)
 
+            writer.add_scalars('Cider per epoch', {"train": cider_train_eval,
+                                                     "valid": cider}, epoch)
+
             # record the best cider and best epoch
             if cider > best_cider:
                 best_cider = cider
@@ -150,7 +166,7 @@ def main_train(cf):
             whether_early_stop = early_stop_Ornot(cf, cider_scores, best_cider)
             if whether_early_stop:
                 break
-
+    writer.close()
     print('Model of best epoch #: %d with CIDEr score %.2f' % (best_epoch, best_cider))
 
 

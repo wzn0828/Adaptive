@@ -37,7 +37,7 @@ opt_fine_tune_cnn_start_layer   = 5                                         # CN
 opt_fine_tune_cnn_start_epoch   = 20                                        # start fine-tuning CNN after
 
 # Optimizer parameter of rnn
-opt_rnn_optimization                = 'lbfgs'  #['adam','sgd','lbfgs']
+opt_rnn_optimization                = 'adam'  #['adam','sgd','lbfgs']
 opt_rnn_adam_alpha                  = 0.9                                       # alpha in Adam
 opt_rnn_adam_beta                   = 0.999                                     # beta in Adam
 opt_rnn_adam_learning_rate          = 5e-4                                    # learning rate for the whole model
@@ -47,7 +47,7 @@ opt_rnn_sgd_learning_rate           = 5e-2
 opt_rnn_sgd_momentum                = 0.3
 opt_rnn_sgd_weight_decay            = 0
 
-opt_rnn_lbfgs_lr                    = 0.8
+opt_rnn_lbfgs_lr                    = 0.5
 opt_rnn_lbfgs_max_iter              = 20
 opt_rnn_lbfgs_history               = 50
 
