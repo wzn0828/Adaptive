@@ -12,7 +12,7 @@ test_anno_path              = 'code_src/data/annotations/karpathy_split_test.jso
 train_eval_anno_path        = 'code_src/data/annotations/karpathy_split_train_eval_hyperparameter.json'
 
 #--------------------attention_model--------------------#
-atten_model_name            = 'adaptive'    # ['adaptive','rnn_attention']
+atten_model_name            = 'rnn_attention'    # ['adaptive','rnn_attention']
 
 #--------------------train--------------------#
 trainOrnot                  = True

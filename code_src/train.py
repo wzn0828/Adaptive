@@ -44,6 +44,9 @@ def main_train(cf):
                              transform, cf.train_batch_size,
                              shuffle=True, num_workers=cf.dataloader_num_workers)
 
+    # tensorboard plot
+    writer = SummaryWriter()
+
     # build model
     model, start_epoch = get_model(cf)
 
@@ -68,9 +71,6 @@ def main_train(cf):
     best_epoch = 0
 
     train_losses = []
-
-    # tensorboard plot
-    writer = SummaryWriter()
 
     # Start Training
     global_n_iter = 0
