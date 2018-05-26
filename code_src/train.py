@@ -99,12 +99,12 @@ def main_train(cf):
             #     p.data.clamp_(-cf.train_clip, cf.train_clip)
 
             # decoder optimize
-            loss_data, total_norm = model_optimize(decoder_optimizer, model, images, captions, lengths, targets, LMcriterion, True)
+            loss_data, total_norm = model_optimize(decoder_optimizer, model, images, captions, lengths, targets, LMcriterion, cf, True)
 
             # encoder optimize
             if epoch > cf.opt_fine_tune_cnn_start_epoch:
                 if encoder_lbfgs_flag:
-                    model_optimize(encoder_optimizer, model, images, captions, lengths, targets, LMcriterion, False)
+                    model_optimize(encoder_optimizer, model, images, captions, lengths, targets, LMcriterion, cf, False)
                 else:
                     encoder_optimizer.step()
 
@@ -175,7 +175,7 @@ def main_train(cf):
     print('Model of best epoch #: %d with CIDEr score %.2f' % (best_epoch, best_cider))
 
 
-def model_optimize(optimizer, model, images, captions, lengths, targets, LMcriterion, lstm_clip_grad):
+def model_optimize(optimizer, model, images, captions, lengths, targets, LMcriterion, cf, lstm_clip_grad):
 
     batch_losses = []
     total_norm = [0]
