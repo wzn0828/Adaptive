@@ -11,7 +11,6 @@ from code_src.data.data_loader import get_loader
 from torchvision import transforms
 from torch.nn.utils.rnn import pack_padded_sequence
 from tensorboardX import SummaryWriter
-# writer = SummaryWriter()
 from code_src.models.model_factory import get_model, get_encoder_optimizer, get_decoder_optimizer
 
 def main_train(cf):
@@ -95,17 +94,17 @@ def main_train(cf):
             # preparation for train
             model.train()
 
-            # Gradient clipping for gradient exploding problem in LSTM
-            for p in model.decoder.LSTM.parameters():
-                p.data.clamp_(-cf.train_clip, cf.train_clip)
+            # # Gradient clipping for gradient exploding problem in LSTM
+            # for p in model.decoder.LSTM.parameters():
+            #     p.data.clamp_(-cf.train_clip, cf.train_clip)
 
             # decoder optimize
-            loss_data = model_optimize(decoder_optimizer, model, images, captions, lengths, targets, LMcriterion)
+            loss_data, total_norm = model_optimize(decoder_optimizer, model, images, captions, lengths, targets, LMcriterion, True)
 
             # encoder optimize
             if epoch > cf.opt_fine_tune_cnn_start_epoch:
                 if encoder_lbfgs_flag:
-                    model_optimize(encoder_optimizer, model, images, captions, lengths, targets, LMcriterion)
+                    model_optimize(encoder_optimizer, model, images, captions, lengths, targets, LMcriterion, False)
                 else:
                     encoder_optimizer.step()
 
@@ -119,12 +118,18 @@ def main_train(cf):
                                                                                                    loss_data,
                                                                                                    np.exp(loss_data)))
 
-            # histogram of parameters
+            # tensorboard: histogram of parameters and gradients
             global_n_iter += 1
-            if global_n_iter % 3 == 0:
+            if global_n_iter % cf.train_tb_interval_batches == 0:
                 for name, param in model.named_parameters():
                     if 'resnet' not in name:
-                        writer.add_histogram(name.replace('.', '/'), param, global_n_iter, bins='auto')
+                        writer.add_histogram('Weights_' + name.replace('.', '/'), param, global_n_iter, bins='auto')
+                        if cf.train_tb_gradOrnot:
+                            writer.add_histogram('Grads_' + name.replace('.', '/'), param.grad, global_n_iter, bins='auto')
+
+            # tensorboard: scalars of lstm norm
+            if cf.train_tb_lstm_clip_grad:
+                writer.add_scalar('decoder_norm/decoder_lstm_norm', total_norm, global_n_iter)
 
 
         # Save the Adaptive Attention model after each epoch
@@ -133,13 +138,12 @@ def main_train(cf):
                                 'attention_model-%d.pkl' % (epoch)))
 
         train_loss = np.array(train_batch_losses).mean()
-        writer.add_scalar('train loss per epoch', train_loss, epoch)
+        writer.add_scalar('loss-performance/train loss per epoch', train_loss, epoch)
         print('Train Loss', epoch, train_loss)
         train_losses.append(train_loss)
         print('Train Losses:')
         print(train_losses)
-        # plot figure losses
-        figure_loss(cf, epoch, train_losses)
+
 
         if cf.train_evalOrnot:
             # Evaluation on train_eval set
@@ -154,7 +158,7 @@ def main_train(cf):
             print('#---printing validation cider_scores---#')
             print(cider_scores)
 
-            writer.add_scalars('Cider per epoch', {"train": cider_train_eval,
+            writer.add_scalars('loss-performance/Cider per epoch', {"train": cider_train_eval,
                                                      "valid": cider}, epoch)
 
             # record the best cider and best epoch
@@ -167,12 +171,14 @@ def main_train(cf):
             if whether_early_stop:
                 break
     writer.close()
+
     print('Model of best epoch #: %d with CIDEr score %.2f' % (best_epoch, best_cider))
 
 
-def model_optimize(optimizer, model, images, captions, lengths, targets, LMcriterion):
+def model_optimize(optimizer, model, images, captions, lengths, targets, LMcriterion, lstm_clip_grad):
 
     batch_losses = []
+    total_norm = [0]
     def closure():
         # Forward
         model.zero_grad()
@@ -183,10 +189,14 @@ def model_optimize(optimizer, model, images, captions, lengths, targets, LMcrite
         loss = LMcriterion(packed_scores[0], targets)
         batch_losses.append(loss.data.cpu().item())
         loss.backward()
+
+        if lstm_clip_grad:
+            total_norm.append(torch.nn.utils.clip_grad_norm_(model.decoder.LSTM.parameters(), cf.train_lstm_maxnormal))
+
         return loss
     optimizer.step(closure)
 
-    return batch_losses[0]
+    return batch_losses[0], total_norm[-1]
 
 
 

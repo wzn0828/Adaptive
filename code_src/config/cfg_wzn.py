@@ -27,8 +27,11 @@ train_clip                  = 0.1                                       # Gradie
 train_lr_decay              = 40                                        # epoch at which to start lr decay
 train_lr_decay_every        = 50                                        # decay learning rate half at every this number
 train_early_stop            = True
-train_figure_epoch          = 2
 train_evalOrnot             = False
+train_tb_interval_batches   = 1
+train_tb_gradOrnot          = False
+train_tb_lstm_clip_grad     = True
+train_lstm_maxnormal        = 100
 
 
 # optimization

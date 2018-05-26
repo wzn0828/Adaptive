@@ -122,7 +122,6 @@ class AdaptiveBlock(nn.Module):
                     Variable(weight.new(1, bsz, self.hidden_size).zero_()))
 
 
-
 # Caption Decoder
 class Decoder(nn.Module):
     def __init__(self, embed_size, vocab_size, hidden_size, cf):
