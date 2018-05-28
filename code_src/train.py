@@ -50,9 +50,13 @@ def main_train(cf):
     # build model
     model, start_epoch = get_model(cf)
 
-    # Constructing optimizer for encoder and decoder
+    # Constructing optimizer and scheduler for encoder and decoder
     encoder_optimizer, encoder_lbfgs_flag = get_encoder_optimizer(cf, model)
     decoder_optimizer = get_decoder_optimizer(cf, model)
+    decoder_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(decoder_optimizer, factor=0.2, patience=5,
+                                                                   threshold=0.02, threshold_mode='abs', min_lr=1e-6)
+    encoder_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(encoder_optimizer, factor=0.2, patience=5,
+                                                                   threshold=0.02, threshold_mode='abs', min_lr=1e-7)
 
     # Language Modeling Loss
     LMcriterion = nn.CrossEntropyLoss()
@@ -70,18 +74,23 @@ def main_train(cf):
     best_cider = 0.0
     best_epoch = 0
 
-    train_losses = []
+    train_epoch_losses = []
+    # initial train_epoch_loss for lr scheduler
+    train_epoch_loss = 100
 
     # Start Training
     global_n_iter = 0
+    encoder_opt_flag = False
     for epoch in range(start_epoch, cf.train_num_epochs + 1):
-
-        # # Start Learning Rate Decay
-        # learning_rate = lr_decay(cf, epoch, learning_rate)
-        # print('Learning Rate for Epoch %d: %.6f' % (epoch, learning_rate))
-
-        # Language Modeling Training
+        # Model Training
         print('#------------------Training for Epoch %d----------------#' % (epoch))
+
+        if epoch > cf.opt_fine_tune_cnn_start_epoch:
+            encoder_opt_flag = True
+
+        # implementing lr scheduler
+        lr_scheduler(decoder_scheduler, encoder_scheduler, encoder_opt_flag, epoch, train_epoch_loss, writer)
+
         train_batch_losses = []
         for i, (images, captions, lengths, _, _) in enumerate(data_loader):
 
@@ -94,15 +103,11 @@ def main_train(cf):
             # preparation for train
             model.train()
 
-            # # Gradient clipping for gradient exploding problem in LSTM
-            # for p in model.decoder.LSTM.parameters():
-            #     p.data.clamp_(-cf.train_clip, cf.train_clip)
-
             # decoder optimize
             loss_data, total_norm = model_optimize(decoder_optimizer, model, images, captions, lengths, targets, LMcriterion, cf, True)
 
             # encoder optimize
-            if epoch > cf.opt_fine_tune_cnn_start_epoch:
+            if encoder_opt_flag:
                 if encoder_lbfgs_flag:
                     model_optimize(encoder_optimizer, model, images, captions, lengths, targets, LMcriterion, cf, False)
                 else:
@@ -132,18 +137,12 @@ def main_train(cf):
                 writer.add_scalar('decoder_norm/decoder_lstm_norm', total_norm, global_n_iter)
 
 
-        # Save the Adaptive Attention model after each epoch
-        torch.save(model.state_dict(),
-                   os.path.join(cf.trained_model_path,
-                                'attention_model-%d.pkl' % (epoch)))
-
-        train_loss = np.array(train_batch_losses).mean()
-        writer.add_scalar('loss-performance/train loss per epoch', train_loss, epoch)
-        print('Train Loss', epoch, train_loss)
-        train_losses.append(train_loss)
-        print('Train Losses:')
-        print(train_losses)
-
+        train_epoch_loss = np.array(train_batch_losses).mean()
+        writer.add_scalar('loss-performance/train loss per epoch', train_epoch_loss, epoch)
+        print('Train Loss: epoch', epoch, train_epoch_loss)
+        train_epoch_losses.append(train_epoch_loss)
+        print('Train epoch losses:')
+        print(train_epoch_losses)
 
         if cf.train_evalOrnot:
             # Evaluation on train_eval set
@@ -158,8 +157,7 @@ def main_train(cf):
             print('#---printing validation cider_scores---#')
             print(cider_scores)
 
-            writer.add_scalars('loss-performance/Cider per epoch', {"train": cider_train_eval,
-                                                     "valid": cider}, epoch)
+            writer.add_scalars('loss-performance/Cider per epoch', {"train": cider_train_eval, "valid": cider}, epoch)
 
             # record the best cider and best epoch
             if cider > best_cider:
@@ -170,9 +168,26 @@ def main_train(cf):
             whether_early_stop = early_stop_Ornot(cf, cider_scores, best_cider)
             if whether_early_stop:
                 break
+
+            # Save the Adaptive Attention model after each epoch
+            torch.save(model.state_dict(),
+                       os.path.join(cf.trained_model_path, 'cider-%.4f_model-%d.pkl' % (cider, epoch)))
     writer.close()
 
     print('Model of best epoch #: %d with CIDEr score %.2f' % (best_epoch, best_cider))
+
+
+def lr_scheduler(decoder_scheduler, encoder_scheduler, encoder_opt_flag, epoch, train_epoch_loss, writer):
+    decoder_scheduler.step(train_epoch_loss)
+    decoder_lr = decoder_scheduler.optimizer.param_groups[0]['lr']
+    print('learning rate of Decoder is:', decoder_lr)
+    writer.add_scalars('learning rate per epoch', {"decoder": decoder_lr}, epoch)
+
+    if encoder_opt_flag:
+        encoder_scheduler.step(train_epoch_loss)
+        encoder_lr = encoder_scheduler.optimizer.param_groups[0]['lr']
+        print('learning rate of Encoder is:', encoder_lr)
+        writer.add_scalars('learning rate per epoch', {"encoder": encoder_lr}, epoch)
 
 
 def model_optimize(optimizer, model, images, captions, lengths, targets, LMcriterion, cf, lstm_clip_grad):
@@ -190,6 +205,7 @@ def model_optimize(optimizer, model, images, captions, lengths, targets, LMcrite
         batch_losses.append(loss.data.cpu().item())
         loss.backward()
 
+        # clip lstm grad or just for computing the norm of lstm's grad
         if lstm_clip_grad:
             total_norm.append(torch.nn.utils.clip_grad_norm_(model.decoder.LSTM.parameters(), cf.train_lstm_maxnormal))
 

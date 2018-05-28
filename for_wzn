@@ -20,3 +20,4 @@
 20\ left freedom: learning rate; resnet all layer optimization; train_clip or not or lstm_gradient_clip;optimization methods;batch norm; add loss;structure;
 21\ when shuffling, what's the difference between rand and randn ?
 22\ Test L-BFGS on full training dataset;
+23\ encoder lr scheduler and decoder lr scheduler need to be test which one is effective on hyperparameter subset.
