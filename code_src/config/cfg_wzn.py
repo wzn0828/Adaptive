@@ -27,6 +27,7 @@ train_clip                  = 0.1                                       # Gradie
 train_lr_decay              = 40                                        # epoch at which to start lr decay
 train_lr_decay_every        = 50                                        # decay learning rate half at every this number
 train_early_stop            = True
+train_early_stop_patience   = 10
 train_evalOrnot             = False
 train_tb_interval_batches   = 1
 train_tb_gradOrnot          = False
@@ -38,6 +39,9 @@ train_lstm_maxnormal        = 100
 # CNN fine-tuning
 opt_fine_tune_cnn_start_layer   = 5                                         # CNN fine-tuning layers from: [0-7]
 opt_fine_tune_cnn_start_epoch   = 20                                        # start fine-tuning CNN after
+
+# lr scheduler
+opt_lrdecay_patience            = 5
 
 # Optimizer parameter of rnn
 opt_rnn_optimization                = 'adam'  #['adam','sgd','lbfgs']

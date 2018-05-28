@@ -53,9 +53,9 @@ def main_train(cf):
     # Constructing optimizer and scheduler for encoder and decoder
     encoder_optimizer, encoder_lbfgs_flag = get_encoder_optimizer(cf, model)
     decoder_optimizer = get_decoder_optimizer(cf, model)
-    decoder_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(decoder_optimizer, factor=0.2, patience=5,
+    decoder_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(decoder_optimizer, factor=0.2, patience=cf.opt_lrdecay_patience,
                                                                    threshold=0.02, threshold_mode='abs', min_lr=1e-6)
-    encoder_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(encoder_optimizer, factor=0.2, patience=5,
+    encoder_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(encoder_optimizer, factor=0.2, patience=cf.opt_lrdecay_patience,
                                                                    threshold=0.02, threshold_mode='abs', min_lr=1e-7)
 
     # Language Modeling Loss
@@ -245,13 +245,13 @@ def early_stop_Ornot(cf, cider_scores, best_cider):
     :return: early stop or not
     '''
     flag = False
-    if cf.train_early_stop and len(cider_scores) > 5:
-        last_6 = cider_scores[-6:]
-        last_6_max = max(last_6)
+    if cf.train_early_stop and len(cider_scores) > cf.train_early_stop_patience:
+        last_ciders = cider_scores[-(cf.train_early_stop_patience+1):]
+        last_ciders_max = max(last_ciders)
 
         # Test if there is improvement, if not do early stopping
-        if last_6_max != best_cider:
-            print('No improvement with CIDEr in the last 6 epochs...Early stopping triggered.')
+        if last_ciders_max != best_cider:
+            print('No improvement with CIDEr in the last %d epochs...Early stopping triggered.' % (cf.train_early_stop_patience+1))
             flag = True
 
     return flag
