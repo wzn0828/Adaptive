@@ -50,9 +50,6 @@ def main_KarpathySplit(cf):
     info = train['info']
     licenses = train['licenses']
 
-    json_data['train_overfit_onebatch'] = {'type': 'caption', 'info': info, 'licenses': licenses,
-                        'images': [], 'annotations': []}
-
     for subset in dataset.keys():
 
         json_data[subset] = {'type': 'caption', 'info': info, 'licenses': licenses,
