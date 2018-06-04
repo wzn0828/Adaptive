@@ -7,7 +7,6 @@
     len(train_hyperparameter_images)=5000;
     len(val_hyperparameter_images)=1000;
     len(train_eval_hyperparameter_images)=1000;
-    len(train_overfit_onebatch_annos)=20;
 5\ captionsOfTrain.maxlength=52;
 6\ captionsOfTrain.minlength=5;
 7\ captionsOfTrain.meanlength=10.473;
