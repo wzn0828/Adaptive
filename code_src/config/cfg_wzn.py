@@ -1,10 +1,10 @@
 #--------------------path--------------------#
 experiment_path             = 'Experiments'
 vocab_path                  = 'code_src/data/vocab.pkl'   # path for vocabulary wrapper
-resized_image_dir           = '/home/wangzn/Datasets/ImageCaption/MSCOCO/resized'   # directory for resized training images
-image_dir                   = '/home/wangzn/Datasets/ImageCaption/MSCOCO'
-captions_val_origin         = '/home/wangzn/Datasets/ImageCaption/MSCOCO/annotations/annotations_trainval2014/captions_val2014.json'
-captions_train_origin       = '/home/wangzn/Datasets/ImageCaption/MSCOCO/annotations/annotations_trainval2014/captions_train2014.json'
+image_dir                   = '/media/samsumg_1tb/Image_Caption/Datasets/MSCOCO'
+resized_image_dir           = image_dir + '/resized'   # directory for resized training images
+captions_val_origin         = image_dir + '/annotations/annotations_trainval2014/captions_val2014.json'
+captions_train_origin       = image_dir + '/annotations/annotations_trainval2014/captions_train2014.json'
 splited_anno_path_prefix    = 'code_src/data/annotations/karpathy_split_'
 train_anno_path             = 'code_src/data/annotations/karpathy_split_train_overfit.json'  # path for train annotation json file
 val_anno_path               = 'code_src/data/annotations/karpathy_split_val_hyperparameter.json'    # path for validation annotation json file
