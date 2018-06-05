@@ -128,9 +128,9 @@ def main_train(cf):
             if global_n_iter % cf.train_tb_interval_batches == 0:
                 for name, param in model.named_parameters():
                     if 'resnet' not in name:
-                        writer.add_histogram('Weights_' + name.replace('.', '/'), param, global_n_iter, bins='auto')
+                        writer.add_histogram('Weights_' + name.replace('.', '/'), param, global_n_iter)
                         if cf.train_tb_gradOrnot:
-                            writer.add_histogram('Grads_' + name.replace('.', '/'), param.grad, global_n_iter, bins='auto')
+                            writer.add_histogram('Grads_' + name.replace('.', '/'), param.grad, global_n_iter)
 
             # tensorboard: scalars of lstm norm
             if cf.train_tb_lstm_clip_grad:
@@ -181,13 +181,13 @@ def lr_scheduler(decoder_scheduler, encoder_scheduler, encoder_opt_flag, epoch, 
     decoder_scheduler.step(train_epoch_loss)
     decoder_lr = decoder_scheduler.optimizer.param_groups[0]['lr']
     print('learning rate of Decoder is:', decoder_lr)
-    writer.add_scalars('learning rate per epoch', {"decoder": decoder_lr}, epoch)
+    writer.add_scalars('learning_rate_per_epoch', {"decoder": decoder_lr}, epoch)
 
     if encoder_opt_flag:
         encoder_scheduler.step(train_epoch_loss)
         encoder_lr = encoder_scheduler.optimizer.param_groups[0]['lr']
         print('learning rate of Encoder is:', encoder_lr)
-        writer.add_scalars('learning rate per epoch', {"encoder": encoder_lr}, epoch)
+        writer.add_scalars('learning_rate_per_epoch', {"encoder": encoder_lr}, epoch)
 
 
 def model_optimize(optimizer, model, images, captions, lengths, targets, LMcriterion, cf, lstm_clip_grad):

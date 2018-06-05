@@ -1,7 +1,7 @@
 #--------------------path--------------------#
 experiment_path             = 'Experiments'
 vocab_path                  = 'code_src/data/vocab.pkl'   # path for vocabulary wrapper
-image_dir                   = '/media/samsumg_1tb/Image_Caption/Datasets/MSCOCO'
+image_dir                   = '/home/wzn/D/Datasets/ImageCaption/MSCOCO'
 resized_image_dir           = image_dir + '/resized'   # directory for resized training images
 captions_val_origin         = image_dir + '/annotations/annotations_trainval2014/captions_val2014.json'
 captions_train_origin       = image_dir + '/annotations/annotations_trainval2014/captions_train2014.json'
@@ -15,22 +15,22 @@ train_eval_anno_path        = 'code_src/data/annotations/karpathy_split_train_ev
 atten_model_name            = 'rnn_attention'    # ['adaptive','rnn_attention']
 
 #--------------------train--------------------#
-trainOrnot                  = False
+trainOrnot                  = True
 train_crop_size             = 224        # size for randomly cropping images
 train_log_step              = 10                                                 # step size for printing log info
 train_random_seed           = 123                                                # random seed for model reproduction
 train_pretrained            = False         # use train_pretrained_model or not
 train_pretrained_model      = 'Experiments/Train_adaptive_adam_adam_cnn_start_layer_5_cnn_start_epoch_5___2018-05-24-17-14-31/trained_models/attention_model-75.pkl'      # [''|'path'] path of used model'] start from checkpoint or scratch, '' represents start from scratch
 train_num_epochs            = 200                                        # the maximum epochs
-train_batch_size            = 20                                        # on cluster setup, 60 each x 4 for Huckle server
+train_batch_size            = 10                                        # on cluster setup, 60 each x 4 for Huckle server
 train_clip                  = 0.1                                       # Gradient clipping for gradient exploding problem in LSTM
 train_lr_decay              = 40                                        # epoch at which to start lr decay
 train_lr_decay_every        = 50                                        # decay learning rate half at every this number
 train_early_stop            = True
 train_early_stop_patience   = 10
-train_evalOrnot             = False
+train_evalOrnot             = True
 train_tb_interval_batches   = 1
-train_tb_gradOrnot          = False
+train_tb_gradOrnot          = True
 train_tb_lstm_clip_grad     = True
 train_lstm_maxnormal        = 100
 
@@ -102,7 +102,7 @@ vacab_build_Ornot           = False
 vocab_threshold             = 5                                         # minimum word count threshold
 
 #--------------------KarpathySplit--------------------#
-KarpathySplitOrnot          = True
+KarpathySplitOrnot          = False
 num_val                     = 5000
 num_test                    = 5000
 num_train_eval              = 5000
