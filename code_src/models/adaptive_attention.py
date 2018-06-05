@@ -5,56 +5,9 @@ from torch.nn.utils.rnn import pack_padded_sequence
 from torch.autograd import Variable
 import torch.nn.functional as F
 from torch.nn import init
+from code_src.models import baseline_attention
 
 # ========================================Knowing When to Look========================================
-# Encoder, doing this for extracting cnn features.
-class AttentiveCNN(nn.Module):
-    def __init__(self, embed_size, hidden_size):
-        super(AttentiveCNN, self).__init__()
-
-        # ResNet-152 backend
-        resnet = models.resnet152(pretrained=True)
-        modules = list(resnet.children())[:-2]  # delete the last fc layer and avg pool.
-        resnet_conv = nn.Sequential(*modules)  # last conv feature
-
-        self.resnet_conv = resnet_conv
-        self.avgpool = nn.AvgPool2d(7)
-        self.affine_a = nn.Linear(2048, hidden_size)  # v_i = W_a * A
-        self.affine_b = nn.Linear(2048, embed_size)  # v_g = W_b * a^g
-
-        # Dropout before affine transformation
-        self.dropout = nn.Dropout(0)
-
-        self.init_weights()
-
-    def init_weights(self):
-        """Initialize the weights."""
-        init.kaiming_uniform(self.affine_a.weight, mode='fan_in')
-        init.kaiming_uniform(self.affine_b.weight, mode='fan_in')
-        self.affine_a.bias.data.fill_(0)
-        self.affine_b.bias.data.fill_(0)
-
-    def forward(self, images):
-        '''
-        Input: images
-        Output: V=[v_1, ..., v_n], v_g
-        '''
-
-        # Last conv layer feature map, size of [cf.train_batch_size, 2048, 7, 7]
-        A = self.resnet_conv(images)
-
-        # a^g, average pooling feature map
-        a_g = self.avgpool(A)       # size of [cf.train_batch_size, 2048, 1, 1]
-        a_g = a_g.view(a_g.size(0), -1)       # size of [cf.train_batch_size, 2048]
-
-        # V = [ v_1, v_2, ..., v_49 ]
-        V = A.view(A.size(0), A.size(1), -1).transpose(1, 2)     # size of [cf.train_batch_size, 49, 2048]
-        V = F.relu(self.affine_a(self.dropout(V)))      # size of [cf.train_batch_size, 49, cf.lstm_hidden_size]
-
-        v_g = F.relu(self.affine_b(self.dropout(a_g)))      # size of [cf.train_batch_size, cf.lstm_embed_size]
-
-        return V, v_g
-
 
 # Attention Block for C_hat calculation
 class Atten(nn.Module):
@@ -277,12 +230,12 @@ class Decoder(nn.Module):
 
 # Whole Architecture with Image Encoder and Caption decoder        
 class Encoder2Decoder(nn.Module):
-    def __init__(self, embed_size, vocab_size, hidden_size):    # size of vocab_size is 10141
+    def __init__(self, cf):    # size of vocab_size is 10141
         super(Encoder2Decoder, self).__init__()
 
         # Image CNN encoder and Adaptive Attention Decoder
-        self.encoder = AttentiveCNN(embed_size, hidden_size)
-        self.decoder = Decoder(embed_size, vocab_size, hidden_size)
+        self.encoder = baseline_attention.AttentiveCNN(cf.adaptive_word_embed_size, cf.adaptive_lstm_hidden_size)
+        self.decoder = Decoder(cf.adaptive_word_embed_size, cf.vocab_length, cf.adaptive_lstm_hidden_size)
 
     def forward(self, images, captions, lengths):
         '''
