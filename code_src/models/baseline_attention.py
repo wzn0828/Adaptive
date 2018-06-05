@@ -6,7 +6,7 @@ from torch.autograd import Variable
 import torch.nn.functional as F
 from torch.nn import init
 
-# ========================================Knowing When to Look========================================
+# ========================================spatial attention========================================#
 # Encoder, doing this for extracting cnn features.
 class AttentiveCNN(nn.Module):
     def __init__(self, embed_size, hidden_size):
@@ -219,12 +219,12 @@ class Decoder(nn.Module):
 
 # Whole Architecture with Image Encoder and Caption decoder        
 class Encoder2Decoder(nn.Module):
-    def __init__(self, embed_size, vocab_size, hidden_size):    # size of vocab_size is 10141
+    def __init__(self, cf):    # size of vocab_size is 10141
         super(Encoder2Decoder, self).__init__()
 
         # Image CNN encoder and Adaptive Attention Decoder
-        self.encoder = AttentiveCNN(embed_size, hidden_size)
-        self.decoder = Decoder(embed_size, vocab_size, hidden_size)
+        self.encoder = AttentiveCNN(cf.base_word_embed_size, cf.base_lstm_hidden_size)
+        self.decoder = Decoder(cf.base_word_embed_size, cf.vocab_length, cf.base_lstm_hidden_size)
 
     def forward(self, images, captions, lengths):
         '''
