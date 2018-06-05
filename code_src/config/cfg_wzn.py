@@ -80,14 +80,6 @@ testOrnot                   = False
 test_pretrained_model       = 'Experiments/Train_rnn_attention_lr_5e-06_cnnlr_1e-06_cnn_start_layer_0_cnn_start_epoch_20___2018-04-27-11-00-54/trained_models/adaptive-51.pkl'      # used pretrained model parameters in test
 
 #--------------------hyper parameters--------------------#
-
-
-# learning rate for fine-tuning CNN
-
-# LSTM hyper parameters
-lstm_embed_size             = 256                                       # dimension of word embedding vectors, also dimension of v_g
-lstm_hidden_size            = 512                                       # dimension of lstm hidden states
-
 # For eval_size > 30, it will cause cuda OOM error on Huckleberry
 eval_batch_size             = 20
 # on cluster setup, 30 each x 4
@@ -113,11 +105,20 @@ num_train_hyperparameter    = 5000
 num_train_eval_hyperparameter = 1000
 num_val_hyperparameter      = 1000
 
+###--------------------models--------------------###
+
+#------------------baseline_attention------------------#
+base_word_embed_size             = 256                                       # dimension of word embedding vectors, also dimension of v_g
+base_lstm_hidden_size            = 512                                       # dimension of lstm hidden states
+
+#------------------adaptive_attention------------------#
+adaptive_word_embed_size         = 256
+adaptive_lstm_hidden_size        = 512
 
 #--------------------rnn_attention--------------------#
 rnn_attention_bidirectional = True                                      # whether use bidirection in lstm structure of rnn_attention
-rnn_attention_embed_size    = lstm_embed_size
-rnn_attention_hiddensize    = lstm_hidden_size
+rnn_attention_embed_size    = base_word_embed_size
+rnn_attention_hiddensize    = base_lstm_hidden_size
 rnn_attention_numlayers     = 1
 
 #--------------------valid-------------------#
