@@ -13,7 +13,7 @@ from torchvision import transforms, datasets
 
 from coco.PythonAPI.pycocotools.coco import COCO
 from coco.pycocoevalcap.eval import COCOEvalCap
-from code_src.models.base_adaptive import Encoder2Decoder
+from code_src.models.adaptive_attention import Encoder2Decoder
 import code_src.models as atten_models
 from code_src.data.data_loader import get_loader
 from torch.nn.utils.rnn import pack_padded_sequence
@@ -253,7 +253,7 @@ def coco_eval(cf, model=None, epoch=0, train_mode=False, test_mode=False, valid_
 def get_testOrValid_model(cf, test_mode, valid_mode):
     # build model
     if cf.atten_model_name == 'adaptive':
-        adaptive = atten_models.base_adaptive.Encoder2Decoder(cf.lstm_embed_size, cf.vocab_length, cf.lstm_hidden_size)
+        adaptive = atten_models.adaptive_attention.Encoder2Decoder(cf.lstm_embed_size, cf.vocab_length, cf.lstm_hidden_size)
     elif cf.atten_model_name == 'rnn_attention':
         adaptive = atten_models.rnn_attention.Encoder2Decoder(cf)
 

@@ -5,7 +5,7 @@ import torch
 def get_model(cf):
     # build model
     if cf.atten_model_name == 'adaptive':
-        model = models.base_adaptive.Encoder2Decoder(cf.lstm_embed_size, cf.vocab_length, cf.lstm_hidden_size)
+        model = models.adaptive_attention.Encoder2Decoder(cf.lstm_embed_size, cf.vocab_length, cf.lstm_hidden_size)
     elif cf.atten_model_name == 'rnn_attention':
         model = models.rnn_attention.Encoder2Decoder(cf)
 

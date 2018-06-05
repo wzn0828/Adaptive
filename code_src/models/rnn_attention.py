@@ -5,10 +5,10 @@ from torch.nn.utils.rnn import pack_padded_sequence
 from torch.autograd import Variable
 import torch.nn.functional as F
 from torch.nn import init
-from code_src.models import base_adaptive
+from code_src.models import adaptive_attention
 
 # ========================================Recurrent Attention========================================
-# Encoder, doing this for extracting cnn features. Temporarily, this is the same as base_adaptive.py.
+# Encoder, doing this for extracting cnn features. Temporarily, this is the same as adaptive_attention.py.
 
 # Attention Block for C_hat and attention value calculation
 class Atten(nn.Module):
@@ -187,12 +187,12 @@ class Decoder(nn.Module):
 
 
 # Whole Architecture with Image Encoder and Caption decoder
-class Encoder2Decoder(base_adaptive.Encoder2Decoder):
+class Encoder2Decoder(adaptive_attention.Encoder2Decoder):
     def __init__(self, cf):    # size of vocab_size is 10141
         nn.Module.__init__(self)
 
         # Image CNN encoder and Adaptive Attention Decoder
-        self.encoder = base_adaptive.AttentiveCNN(cf.rnn_attention_embed_size, cf.rnn_attention_hiddensize)
+        self.encoder = adaptive_attention.AttentiveCNN(cf.rnn_attention_embed_size, cf.rnn_attention_hiddensize)
         self.decoder = Decoder(cf.rnn_attention_embed_size, cf.vocab_length, cf.rnn_attention_hiddensize, cf)
 
     # Caption generator
