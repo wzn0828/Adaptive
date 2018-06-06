@@ -207,14 +207,14 @@ class Decoder(nn.Module):
             device_ids = range(torch.cuda.device_count())
             adaptive_block_parallel = nn.DataParallel(self.adaptive, device_ids=device_ids)
 
-            scores_atten_weights = adaptive_block_parallel(x, hiddens, cells, V)
+            scores_attens = adaptive_block_parallel(x, hiddens, cells, V)
         else:
-            scores_atten_weights = self.adaptive(x, hiddens, cells, V)   # size of scores is [cf.train_batch_size, maxlength(captions), 10141(vocab_size)]
+            scores_attens = self.adaptive(x, hiddens, cells, V)   # size of scores is [cf.train_batch_size, maxlength(captions), 10141(vocab_size)]
                                                                                 # size of atten_weights is [cf.train_batch_size, maxlength(captions), 49]
                                                                                 # size of beta is [cf.train_batch_size, maxlength(captions), 1]
 
         # Return states for Caption Sampling purpose
-        return scores_atten_weights + (states,)
+        return scores_attens + (states,)
 
 
 # Whole Architecture with Image Encoder and Caption decoder        

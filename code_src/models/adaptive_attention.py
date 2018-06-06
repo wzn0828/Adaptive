@@ -1,7 +1,5 @@
 import torch
 import torch.nn as nn
-import torchvision.models as models
-from torch.nn.utils.rnn import pack_padded_sequence
 from torch.autograd import Variable
 import torch.nn.functional as F
 from torch.nn import init
@@ -162,9 +160,9 @@ class AdaptiveBlock(nn.Module):
 
 
 # Caption Decoder
-class Decoder(nn.Module):
+class Decoder(baseline_attention.Decoder):
     def __init__(self, embed_size, vocab_size, hidden_size):
-        super(Decoder, self).__init__()
+        nn.Module.__init__(self)
 
         # word embedding
         self.embed = nn.Embedding(vocab_size, embed_size)
@@ -178,88 +176,15 @@ class Decoder(nn.Module):
         # Adaptive Attention Block: Sentinel + C_hat + Final scores for caption sampling
         self.adaptive = AdaptiveBlock(embed_size, hidden_size, vocab_size)
 
-    def forward(self, V, v_g, captions, states=None):
-
-        # Word Embedding
-        embeddings = self.embed(captions)   # size of [cf.train_batch_size, maxlength(captions), cf.lstm_embed_size]
-
-        # x_t = [w_t;v_g]
-        x = torch.cat((embeddings, v_g.unsqueeze(1).expand_as(embeddings)), dim=2)  # size of [cf.train_batch_size, maxlength(captions), 2*cf.lstm_embed_size]
-
-        # Hiddens: Batch x seq_len x hidden_size
-        # Cells: seq_len x Batch x hidden_size, default setup by Pytorch
-        if torch.cuda.is_available():
-            hiddens = Variable(torch.zeros(x.size(0), x.size(1), self.hidden_size).cuda())      # size of [cf.train_batch_size, maxlength(captions),  cf.lstm_hidden_size]
-            cells = Variable(torch.zeros(x.size(1), x.size(0), self.hidden_size).cuda())        # size of [maxlength(captions),  cf.train_batch_size, cf.lstm_hidden_size]
-        else:
-            hiddens = Variable(torch.zeros(x.size(0), x.size(1), self.hidden_size))
-            cells = Variable(torch.zeros(x.size(1), x.size(0), self.hidden_size))
-
-        # Recurrent Block
-        # Retrieve hidden & cell for Sentinel simulation
-        for time_step in range(x.size(1)):
-            # Feed in x_t one at a time
-            x_t = x[:, time_step, :]    # size of [cf.train_batch_size, 2*cf.lstm_embed_size]
-            x_t = x_t.unsqueeze(1)      # size of [cf.train_batch_size, 1, 2*cf.lstm_embed_size]
-
-            h_t, states = self.LSTM(x_t, states)    # size of ht is [cf.train_batch_size, 1, cf.lstm_hidden_size]
-                                                    # states[0] is h_n with the size of [1, cf.train_batch_size, cf.lstm_hidden_size]
-                                                    # states[1] is c_n with the size of [1, cf.train_batch_size, cf.lstm_hidden_size]
-
-            # Save hidden and cell
-            hiddens[:, time_step, :] = h_t.squeeze(1)  # Batch_first
-            cells[time_step, :, :] = states[1]
-
-        # cell: Batch x seq_len x hidden_size
-        cells = cells.transpose(0, 1)       # size of [cf.train_batch_size, maxlength(captions),  cf.lstm_hidden_size]
-
-        # Data parallelism for adaptive attention block
-        if torch.cuda.device_count() > 1:
-            device_ids = range(torch.cuda.device_count())
-            adaptive_block_parallel = nn.DataParallel(self.adaptive, device_ids=device_ids)
-
-            scores, atten_weights, beta = adaptive_block_parallel(x, hiddens, cells, V)
-        else:
-            scores, atten_weights, beta = self.adaptive(x, hiddens, cells, V)   # size of scores is [cf.train_batch_size, maxlength(captions), 10141(vocab_size)]
-                                                                                # size of atten_weights is [cf.train_batch_size, maxlength(captions), 49]
-                                                                                # size of beta is [cf.train_batch_size, maxlength(captions), 1]
-
-        # Return states for Caption Sampling purpose
-        return scores, states, atten_weights, beta
-
 
 # Whole Architecture with Image Encoder and Caption decoder        
-class Encoder2Decoder(nn.Module):
+class Encoder2Decoder(baseline_attention.Encoder2Decoder):
     def __init__(self, cf):    # size of vocab_size is 10141
-        super(Encoder2Decoder, self).__init__()
+        nn.Module.__init__(self)
 
         # Image CNN encoder and Adaptive Attention Decoder
         self.encoder = baseline_attention.AttentiveCNN(cf.adaptive_word_embed_size, cf.adaptive_lstm_hidden_size)
         self.decoder = Decoder(cf.adaptive_word_embed_size, cf.vocab_length, cf.adaptive_lstm_hidden_size)
-
-    def forward(self, images, captions, lengths):
-        '''
-        :param images: size of [cf.train_batch_size, 3, 224, 224]
-        :param captions: size of [cf.train_batch_size, maxlength of current batch]
-        :param lengths: size of cf.train_batch_size, each element has removed the first word (<start> token)
-        :return: packed_scores
-        '''
-        # Data parallelism for V v_g encoder if multiple GPUs are available
-        # V=[ v_1, ..., v_k ], v_g in the original paper
-        if torch.cuda.device_count() > 1:
-            device_ids = range(torch.cuda.device_count())
-            encoder_parallel = torch.nn.DataParallel(self.encoder, device_ids=device_ids)
-            V, v_g = encoder_parallel(images)
-        else:
-            V, v_g = self.encoder(images)   # size of V is [cf.train_batch_size, 49, 512], v_g's is [cf.train_batch_size, 256]
-
-        # Language Modeling on word prediction
-        decoder_outputs = self.decoder(V, v_g, captions)    # size of scores is [cf.train_batch_size, 18, 10141(vocab_size)]
-
-        # Pack it to make criterion calculation more efficient
-        packed_scores = pack_padded_sequence(decoder_outputs[0], lengths, batch_first=True) # size of packed_scores.data is [sum(lengths), 10141]
-
-        return packed_scores
 
     # Caption generator
     def sampler(self, images, max_len=30):
@@ -295,7 +220,7 @@ class Encoder2Decoder(nn.Module):
         states = None
 
         for i in range(max_len):
-            scores, states, atten_weights, beta = self.decoder(V, v_g, captions, states)    # size of scores is [cf.eval_batch_size, 1(maxlength(captions)), 10141(vocab_size)]
+            scores, atten_weights, beta, states = self.decoder(V, v_g, captions, states)    # size of scores is [cf.eval_batch_size, 1(maxlength(captions)), 10141(vocab_size)]
                                                                                             # size of atten_weights [cf.eval_batch_size, 1, 49]
                                                                                             # size of beta [cf.eval_batch_size, 1, 1]
             predicted = scores.max(2)[1]
