@@ -214,7 +214,7 @@ class Decoder(nn.Module):
                                                                                 # size of beta is [cf.train_batch_size, maxlength(captions), 1]
 
         # Return states for Caption Sampling purpose
-        return states, scores, atten_weights
+        return scores, atten_weights, states
 
 
 # Whole Architecture with Image Encoder and Caption decoder        
@@ -246,7 +246,7 @@ class Encoder2Decoder(nn.Module):
         decoder_outputs = self.decoder(V, v_g, captions)    # size of scores is [cf.train_batch_size, 18, 10141(vocab_size)]
 
         # Pack it to make criterion calculation more efficient
-        packed_scores = pack_padded_sequence(decoder_outputs[1], lengths, batch_first=True) # size of packed_scores.data is [sum(lengths), 10141]
+        packed_scores = pack_padded_sequence(decoder_outputs[0], lengths, batch_first=True) # size of packed_scores.data is [sum(lengths), 10141]
 
         return packed_scores
 
@@ -283,7 +283,7 @@ class Encoder2Decoder(nn.Module):
         states = None
 
         for i in range(max_len):
-            states, scores, atten_weights = self.decoder(V, v_g, captions, states)    # size of scores is [cf.eval_batch_size, 1(maxlength(captions)), 10141(vocab_size)]
+            scores, atten_weights, states = self.decoder(V, v_g, captions, states)    # size of scores is [cf.eval_batch_size, 1(maxlength(captions)), 10141(vocab_size)]
                                                                                             # size of atten_weights [cf.eval_batch_size, 1, 49]
                                                                                             # size of beta [cf.eval_batch_size, 1, 1]
             predicted = scores.max(2)[1]
