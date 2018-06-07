@@ -12,7 +12,7 @@ test_anno_path              = 'code_src/data/annotations/karpathy_split_test.jso
 train_eval_anno_path        = 'code_src/data/annotations/karpathy_split_train_eval_hyperparameter.json'
 
 #--------------------attention_model--------------------#
-atten_model_name            = 'baseline_attention'    # ['baseline_attention', 'adaptive_attention', 'rnn_attention']
+atten_model_name            = 'adaptive_attention'    # ['baseline_attention', 'adaptive_attention', 'rnn_attention']
 
 #--------------------train--------------------#
 trainOrnot                  = True
@@ -21,14 +21,14 @@ train_log_step              = 10                                                
 train_random_seed           = 123                                                # random seed for model reproduction
 train_pretrained            = False         # use train_pretrained_model or not
 train_pretrained_model      = 'Experiments/Train_adaptive_adam_adam_cnn_start_layer_5_cnn_start_epoch_5___2018-05-24-17-14-31/trained_models/attention_model-75.pkl'      # [''|'path'] path of used model'] start from checkpoint or scratch, '' represents start from scratch
-train_num_epochs            = 200                                        # the maximum epochs
+train_num_epochs            = 50                                        # the maximum epochs
 train_batch_size            = 20                                        # on cluster setup, 60 each x 4 for Huckle server
 train_clip                  = 0.1                                       # Gradient clipping for gradient exploding problem in LSTM
 train_lr_decay              = 40                                        # epoch at which to start lr decay
 train_lr_decay_every        = 50                                        # decay learning rate half at every this number
 train_early_stop            = True
 train_early_stop_patience   = 10
-train_evalOrnot             = True
+train_evalOrnot             = False
 train_tb_interval_batches   = 1
 train_tb_gradOrnot          = True
 train_tb_lstm_clip_grad     = True
@@ -44,7 +44,7 @@ opt_fine_tune_cnn_start_epoch   = 20                                        # st
 opt_lrdecay_patience            = 5
 
 # Optimizer parameter of rnn
-opt_rnn_optimization                = 'lbfgs'  #['adam','sgd','lbfgs']
+opt_rnn_optimization                = 'adam'  #['adam','sgd','lbfgs']
 opt_rnn_adam_alpha                  = 0.9                                       # alpha in Adam
 opt_rnn_adam_beta                   = 0.999                                     # beta in Adam
 opt_rnn_adam_learning_rate          = 5e-4                                    # learning rate for the whole model
@@ -60,7 +60,7 @@ opt_rnn_lbfgs_history               = 50
 
 
 # Optimizer parameter of cnn
-opt_cnn_optimization            = 'lbfgs'  #['adam','sgd','lbfgs']
+opt_cnn_optimization            = 'adam'  #['adam','sgd','lbfgs']
 opt_cnn_adam_alpha              = 0.9                                       # alpha in Adam
 opt_cnn_adam_beta               = 0.999
 opt_cnn_adam_learning_rate      = 1e-5
