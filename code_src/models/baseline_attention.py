@@ -5,6 +5,7 @@ from torch.nn.utils.rnn import pack_padded_sequence
 from torch.autograd import Variable
 import torch.nn.functional as F
 from torch.nn import init
+from code_src.models import model_utils
 
 # ========================================spatial attention========================================#
 # Encoder, doing this for extracting cnn features.
@@ -25,14 +26,9 @@ class AttentiveCNN(nn.Module):
         # Dropout before affine transformation
         self.dropout = nn.Dropout(0)
 
-        self.init_weights()
+        # initialization
+        model_utils.xavier_normal('linear', self.affine_a, self.affine_b)
 
-    def init_weights(self):
-        """Initialize the weights."""
-        init.kaiming_uniform(self.affine_a.weight, mode='fan_in')
-        init.kaiming_uniform(self.affine_b.weight, mode='fan_in')
-        self.affine_a.bias.data.fill_(0)
-        self.affine_b.bias.data.fill_(0)
 
     def forward(self, images):
         '''
@@ -65,13 +61,9 @@ class Atten(nn.Module):
         self.affine_g = nn.Linear(hidden_size, 49, bias=False)  # W_g
         self.affine_h = nn.Linear(49, 1, bias=False)  # w_h
         self.dropout = nn.Dropout(0)
-        self.init_weights()
-
-    def init_weights(self):
-        """Initialize the weights."""
-        init.xavier_uniform(self.affine_v.weight)
-        init.xavier_uniform(self.affine_g.weight)
-        init.xavier_uniform(self.affine_h.weight)
+        # initialization
+        model_utils.xavier_normal('tanh', self.affine_v, self.affine_g)
+        model_utils.xavier_normal('linear', self.affine_h)
 
     def forward(self, V, h_t):
         '''
@@ -109,14 +101,10 @@ class AdaptiveBlock(nn.Module):
         self.dropout = nn.Dropout(0)
 
         self.hidden_size = hidden_size
-        self.init_weights()
 
-    def init_weights(self):
-        '''
-        Initialize final classifier weights
-        '''
-        init.kaiming_normal(self.mlp.weight, mode='fan_in')
-        self.mlp.bias.data.fill_(0)
+        # initialization
+        model_utils.xavier_normal('linear', self.mlp)
+
 
     def forward(self, x, hiddens, cells, V):
         # x's size is [cf.train_batch_size, maxlength(captions), 2*cf.lstm_embed_size]
@@ -150,6 +138,9 @@ class Decoder(nn.Module):
 
         # Adaptive Attention Block: Sentinel + C_hat + Final scores for caption sampling
         self.adaptive = AdaptiveBlock(embed_size, hidden_size, vocab_size)
+
+        # initialize the lstm
+        model_utils.lstm_init(self.LSTM)
 
     def forward(self, V, v_g, captions, states=None):
 
