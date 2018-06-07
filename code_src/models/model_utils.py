@@ -25,7 +25,7 @@ def lstm_init(lstm_Module):
     hidden_size = lstm_Module.hidden_size
     for name, param in lstm_Module.named_parameters():
         if 'bias' in name:
-            init.constant(param, 0.0)
-            param[hidden_size:2*hidden_size] = 0.5
+            init.constant_(param, 0.0)
+            param.data[hidden_size:2*hidden_size] = 0.5
         elif 'weight' in name:
             init.orthogonal_(param)

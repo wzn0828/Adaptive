@@ -99,8 +99,6 @@ class AdaptiveBlock(nn.Module):
         # Dropout layer inside Affine Transformation
         self.dropout = nn.Dropout(0)
 
-        self.hidden_size = hidden_size
-
         # initialization
         model_utils.xavier_normal('linear', self.mlp)
 
@@ -132,11 +130,8 @@ class Decoder(nn.Module):
         # LSTM decoder: input = [ w_t; v_g ] => 2 x word_embed_size;
         self.LSTM = nn.LSTM(embed_size * 2, hidden_size, 1, batch_first=True)
 
-        # Save hidden_size for hidden and cell variable 
-        self.hidden_size = hidden_size
-
         # Adaptive Attention Block: Sentinel + C_hat + Final scores for caption sampling
-        self.adaptive = AdaptiveBlock(embed_size, hidden_size, vocab_size)
+        self.adaptive = AdaptiveBlock(hidden_size, vocab_size)
 
         # initialize the lstm
         model_utils.lstm_init(self.LSTM)
@@ -152,11 +147,11 @@ class Decoder(nn.Module):
         # Hiddens: Batch x seq_len x hidden_size
         # Cells: seq_len x Batch x hidden_size, default setup by Pytorch
         if torch.cuda.is_available():
-            hiddens = Variable(torch.zeros(x.size(0), x.size(1), self.hidden_size).cuda())      # size of [cf.train_batch_size, maxlength(captions),  cf.lstm_hidden_size]
-            cells = Variable(torch.zeros(x.size(1), x.size(0), self.hidden_size).cuda())        # size of [maxlength(captions),  cf.train_batch_size, cf.lstm_hidden_size]
+            hiddens = Variable(torch.zeros(x.size(0), x.size(1), self.LSTM.hidden_size).cuda())      # size of [cf.train_batch_size, maxlength(captions),  cf.lstm_hidden_size]
+            cells = Variable(torch.zeros(x.size(1), x.size(0), self.LSTM.hidden_size).cuda())        # size of [maxlength(captions),  cf.train_batch_size, cf.lstm_hidden_size]
         else:
-            hiddens = Variable(torch.zeros(x.size(0), x.size(1), self.hidden_size))
-            cells = Variable(torch.zeros(x.size(1), x.size(0), self.hidden_size))
+            hiddens = Variable(torch.zeros(x.size(0), x.size(1), self.LSTM.hidden_size))
+            cells = Variable(torch.zeros(x.size(1), x.size(0), self.LSTM.hidden_size))
 
         # Recurrent Block
         # Retrieve hidden & cell for Sentinel simulation
