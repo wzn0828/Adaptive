@@ -4,6 +4,7 @@ from torch.autograd import Variable
 import torch.nn.functional as F
 from torch.nn import init
 from code_src.models import baseline_attention
+from code_src.models import model_utils
 
 # ========================================Recurrent Attention========================================
 # Encoder, doing this for extracting cnn features. Temporarily, this is the same as adaptive_attention.py.
@@ -18,17 +19,14 @@ class Atten(nn.Module):
         self.affine_h = nn.Linear(49, 1, bias=False)  # w_h
 
         self.dropout = nn.Dropout(0)
-        self.init_weights()
 
         self.rnn_attention_hiddensize = cf.rnn_attention_hiddensize//2 if cf.rnn_attention_bidirectional==True else cf.rnn_attention_hiddensize
         self.lstm = nn.LSTM(hidden_size, self.rnn_attention_hiddensize, cf.rnn_attention_numlayers, batch_first=True, bidirectional=cf.rnn_attention_bidirectional)
 
-    def init_weights(self):
-        """Initialize the weights."""
-        init.xavier_uniform(self.affine_v.weight)
-        init.xavier_uniform(self.affine_g.weight)
-        init.xavier_uniform(self.affine_h.weight)
-
+        # initialization
+        model_utils.xavier_normal('tanh', self.affine_v, self.affine_g)
+        model_utils.xavier_normal('sigmoid', self.affine_h)
+        model_utils.lstm_init(self.lstm)
 
     def forward(self, V, h_t):
         '''
