@@ -99,7 +99,7 @@ class Atten(nn.Module):
 
 # Adaptive Attention Block: C_t, Spatial Attention Weights, Sentinel embedding
 class AdaptiveBlock(nn.Module):
-    def __init__(self, embed_size, hidden_size, vocab_size):
+    def __init__(self, hidden_size, vocab_size):
         super(AdaptiveBlock, self).__init__()
 
         # Image Spatial Attention Block
@@ -135,19 +135,6 @@ class AdaptiveBlock(nn.Module):
         scores = self.mlp(self.dropout(c_hat + hiddens))    # size of scores is [cf.train_batch_size, maxlength(captions), 10141(vocab_size)]
 
         return scores, atten_weights
-
-    def init_hidden(self, bsz):
-        '''
-        Hidden_0 & Cell_0 initialization
-        '''
-        weight = next(self.parameters()).data
-
-        if torch.cuda.is_available():
-            return (Variable(weight.new(1, bsz, self.hidden_size).zero_().cuda()),
-                    Variable(weight.new(1, bsz, self.hidden_size).zero_().cuda()))
-        else:
-            return (Variable(weight.new(1, bsz, self.hidden_size).zero_()),
-                    Variable(weight.new(1, bsz, self.hidden_size).zero_()))
 
 
 # Caption Decoder
@@ -206,7 +193,6 @@ class Decoder(nn.Module):
         if torch.cuda.device_count() > 1:
             device_ids = range(torch.cuda.device_count())
             adaptive_block_parallel = nn.DataParallel(self.adaptive, device_ids=device_ids)
-
             scores_attens = adaptive_block_parallel(x, hiddens, cells, V)
         else:
             scores_attens = self.adaptive(x, hiddens, cells, V)   # size of scores is [cf.train_batch_size, maxlength(captions), 10141(vocab_size)]
