@@ -45,7 +45,8 @@ def main_train(cf):
                              shuffle=True, num_workers=cf.dataloader_num_workers)
 
     # tensorboard plot
-    writer = SummaryWriter()
+    logdir = os.path.join(cf.exp_dir, 'tensorboard')
+    writer = SummaryWriter(logdir)
 
     # build model
     model, start_epoch = get_model(cf)
