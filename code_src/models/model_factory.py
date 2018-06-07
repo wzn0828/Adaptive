@@ -1,7 +1,7 @@
 from code_src import models
 import torch
 
-
+#-----get model-----#
 def get_model(cf):
     # build model
     if cf.atten_model_name == 'adaptive':
@@ -21,6 +21,7 @@ def get_model(cf):
     return model, start_epoch
 
 
+#-----get parameters or optimizer, of encoder and decoder-----#
 def get_encoder_parameters(cf, model):
     """
     Constructing CNN parameters for optimization, only fine-tuning higher layers
