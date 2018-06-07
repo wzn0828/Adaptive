@@ -48,8 +48,10 @@ class Configuration():
         if cf.KarpathySplitOrnot:
             model_description += 'Karpathy_Split'
         if cf.trainOrnot:
-            model_description += 'Train_' + cf.atten_model_name + '_' + cf.opt_rnn_optimization + '_' + cf.opt_cnn_optimization + '_cnn_start_layer_' + str(
-                cf.opt_fine_tune_cnn_start_layer) + '_cnn_start_epoch_' + str(cf.opt_fine_tune_cnn_start_epoch)
+            if cf.train_pretrained:
+                model_description += 'Train_' + cf.train_pretrained_model.replace('/', '_').split('.')[0]
+            else:
+                model_description += 'Train_' + cf.atten_model_name
         if cf.testOrnot:
             model_description += 'Test_' + cf.test_pretrained_model.replace('/', '_').split('.')[0]
         if cf.validOrnot:
