@@ -63,9 +63,7 @@ class Atten(nn.Module):
 
         self.affine_v = nn.Linear(hidden_size, 49, bias=False)  # W_v
         self.affine_g = nn.Linear(hidden_size, 49, bias=False)  # W_g
-        self.affine_s = nn.Linear(hidden_size, 49, bias=False)  # W_s
         self.affine_h = nn.Linear(49, 1, bias=False)  # w_h
-
         self.dropout = nn.Dropout(0)
         self.init_weights()
 
@@ -74,7 +72,6 @@ class Atten(nn.Module):
         init.xavier_uniform(self.affine_v.weight)
         init.xavier_uniform(self.affine_g.weight)
         init.xavier_uniform(self.affine_h.weight)
-        init.xavier_uniform(self.affine_s.weight)
 
     def forward(self, V, h_t):
         '''

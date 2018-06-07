@@ -162,17 +162,7 @@ class AdaptiveBlock(nn.Module):
 # Caption Decoder
 class Decoder(baseline_attention.Decoder):
     def __init__(self, embed_size, vocab_size, hidden_size):
-        nn.Module.__init__(self)
-
-        # word embedding
-        self.embed = nn.Embedding(vocab_size, embed_size)
-
-        # LSTM decoder: input = [ w_t; v_g ] => 2 x word_embed_size;
-        self.LSTM = nn.LSTM(embed_size * 2, hidden_size, 1, batch_first=True)
-
-        # Save hidden_size for hidden and cell variable 
-        self.hidden_size = hidden_size
-
+        super(Decoder, self).__init__(embed_size, vocab_size, hidden_size)
         # Adaptive Attention Block: Sentinel + C_hat + Final scores for caption sampling
         self.adaptive = AdaptiveBlock(embed_size, hidden_size, vocab_size)
 
