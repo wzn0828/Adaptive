@@ -4,8 +4,10 @@ import torch
 #-----get model-----#
 def get_model(cf):
     # build model
-    if cf.atten_model_name == 'adaptive':
-        model = models.adaptive_attention.Encoder2Decoder(cf.lstm_embed_size, cf.vocab_length, cf.lstm_hidden_size)
+    if cf.atten_model_name == 'baseline_attention':
+        model =models.baseline_attention.Encoder2Decoder(cf)
+    elif cf.atten_model_name == 'adaptive_attention':
+        model = models.adaptive_attention.Encoder2Decoder(cf)
     elif cf.atten_model_name == 'rnn_attention':
         model = models.rnn_attention.Encoder2Decoder(cf)
 

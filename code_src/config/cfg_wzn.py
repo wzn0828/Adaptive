@@ -12,7 +12,7 @@ test_anno_path              = 'code_src/data/annotations/karpathy_split_test.jso
 train_eval_anno_path        = 'code_src/data/annotations/karpathy_split_train_eval_hyperparameter.json'
 
 #--------------------attention_model--------------------#
-atten_model_name            = 'rnn_attention'    # ['adaptive','rnn_attention']
+atten_model_name            = 'rnn_attention'    # ['baseline_attention', 'adaptive_attention', 'rnn_attention']
 
 #--------------------train--------------------#
 trainOrnot                  = True
@@ -44,7 +44,7 @@ opt_fine_tune_cnn_start_epoch   = 20                                        # st
 opt_lrdecay_patience            = 5
 
 # Optimizer parameter of rnn
-opt_rnn_optimization                = 'adam'  #['adam','sgd','lbfgs']
+opt_rnn_optimization                = 'lbfgs'  #['adam','sgd','lbfgs']
 opt_rnn_adam_alpha                  = 0.9                                       # alpha in Adam
 opt_rnn_adam_beta                   = 0.999                                     # beta in Adam
 opt_rnn_adam_learning_rate          = 5e-4                                    # learning rate for the whole model
@@ -60,7 +60,7 @@ opt_rnn_lbfgs_history               = 50
 
 
 # Optimizer parameter of cnn
-opt_cnn_optimization            = 'adam'  #['adam','sgd','lbfgs']
+opt_cnn_optimization            = 'lbfgs'  #['adam','sgd','lbfgs']
 opt_cnn_adam_alpha              = 0.9                                       # alpha in Adam
 opt_cnn_adam_beta               = 0.999
 opt_cnn_adam_learning_rate      = 1e-5
