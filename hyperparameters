@@ -1,0 +1,2 @@
+1\ In AttentiveCNN class of baseline_attention, the affine_a-b initialization methods: Kaiming_uniform_ is a little better than kaiming_normal_;
+2\
