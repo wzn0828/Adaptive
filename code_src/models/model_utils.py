@@ -30,6 +30,21 @@ def kaiming_uniform(nonlinearity, a, *modules):
             module.bias.data.fill_(0)
 
 
+def kaiming_normal(nonlinearity, a, *modules):
+    '''
+    kaiming_normal_ initialization, and fill the bias to zero
+    :param nonlinearity: one of 'relu' or 'leaky_relu'
+    :param a: the negative slope of the rectifier used after this layer (0 for ReLU)
+    :param modules: modules which need to be initialized
+    :return: no return
+    '''
+    for module in modules:
+        init.kaiming_normal_(module.weight, a=a, mode='fan_in', nonlinearity=nonlinearity)
+        if module.bias is not None:
+            module.bias.data.fill_(0)
+
+
+
 def lstm_init(lstm_Module):
     '''
     orthogonalize the weights in lstm, and zeros the bias in lstm, and the bias of forget gate is set to 1.
