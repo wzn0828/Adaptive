@@ -46,7 +46,7 @@ def main_train(cf):
 
     # tensorboard plot
     logdir = os.path.join(cf.exp_dir, 'tensorboard')
-    writer = SummaryWriter(logdir, comment='kaiming_uniform')
+    writer = SummaryWriter(logdir)
 
     # build model
     model, start_epoch = get_model(cf)
@@ -124,18 +124,20 @@ def main_train(cf):
                                                                                                    loss_data,
                                                                                                    np.exp(loss_data)))
 
-            # tensorboard: histogram of parameters and gradients
-            global_n_iter += 1
+            # tensorboard: histogram of parameters and gradients, train losses
             if global_n_iter % cf.train_tb_interval_batches == 0:
                 for name, param in model.named_parameters():
                     if 'resnet' not in name:
                         writer.add_histogram('Weights_' + name.replace('.', '/'), param, global_n_iter)
                         if cf.train_tb_gradOrnot:
                             writer.add_histogram('Grads_' + name.replace('.', '/'), param.grad, global_n_iter)
+                writer.add_scalar('loss-performance/train loss per batches', loss_data, global_n_iter)
 
             # tensorboard: scalars of lstm norm
             if cf.train_tb_lstm_clip_grad:
                 writer.add_scalar('decoder_norm/decoder_lstm_norm', total_norm, global_n_iter)
+
+            global_n_iter += 1
 
 
         train_epoch_loss = np.array(train_batch_losses).mean()
