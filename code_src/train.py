@@ -46,7 +46,7 @@ def main_train(cf):
 
     # tensorboard plot
     logdir = os.path.join(cf.exp_dir, 'tensorboard')
-    writer = SummaryWriter(logdir)
+    writer = SummaryWriter(logdir, comment='kaiming_uniform')
 
     # build model
     model, start_epoch = get_model(cf)

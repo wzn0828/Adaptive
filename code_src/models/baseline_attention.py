@@ -26,7 +26,8 @@ class AttentiveCNN(nn.Module):
         self.dropout = nn.Dropout(0)
 
         # initialization
-        model_utils.xavier_normal('linear', self.affine_a, self.affine_b)
+        model_utils.kaiming_uniform('relu', 0, self.affine_a, self.affine_b)
+        # model_utils.kaiming_normal('relu', 0, self.affine_a, self.affine_b)
 
 
     def forward(self, images):
@@ -133,8 +134,8 @@ class Decoder(nn.Module):
         # Adaptive Attention Block: Sentinel + C_hat + Final scores for caption sampling
         self.adaptive = AdaptiveBlock(hidden_size, vocab_size)
 
-        # initialize the lstm
-        model_utils.lstm_init(self.LSTM)
+        # # initialize the lstm
+        # model_utils.lstm_init(self.LSTM)
 
     def forward(self, V, v_g, captions, states=None):
 

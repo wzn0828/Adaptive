@@ -44,7 +44,6 @@ def kaiming_normal(nonlinearity, a, *modules):
             module.bias.data.fill_(0)
 
 
-
 def lstm_init(lstm_Module):
     '''
     orthogonalize the weights in lstm, and zeros the bias in lstm, and the bias of forget gate is set to 1.
