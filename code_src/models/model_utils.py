@@ -3,7 +3,7 @@ from torch.nn import init
 #-----model initialization-----#
 def xavier_normal(nonlinearity, *modules):
     '''
-    xavier normalization, and fill the bias to zero
+    xavier normal initialization, and fill the bias to zero
     :param nonlinearity: string,the non-linear function (nn.functional name), one of ['linear', 'conv1d', 'conv2d',
     'conv3d', 'conv_transpose1d', 'conv_transpose2d', 'conv_transpose3d', 'sigmoid', 'tanh', 'relu', 'leaky_relu']
     :param modules: modules which need to be initialized
@@ -12,6 +12,20 @@ def xavier_normal(nonlinearity, *modules):
     gain = init.calculate_gain(nonlinearity)
     for module in modules:
         init.xavier_normal_(module.weight, gain)
+        if module.bias is not None:
+            module.bias.data.fill_(0)
+
+
+def kaiming_uniform(nonlinearity, a, *modules):
+    '''
+    kaiming_uniform initialization, and fill the bias to zero
+    :param nonlinearity: one of 'relu' or 'leaky_relu'
+    :param a: the negative slope of the rectifier used after this layer (0 for ReLU)
+    :param modules: modules which need to be initialized
+    :return: no return
+    '''
+    for module in modules:
+        init.kaiming_uniform_(module.weight, a=a, mode='fan_in', nonlinearity=nonlinearity)
         if module.bias is not None:
             module.bias.data.fill_(0)
 
