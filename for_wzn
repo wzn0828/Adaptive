@@ -21,3 +21,15 @@
 21\ when shuffling, what's the difference between rand and randn ?
 22\ Test L-BFGS on full training dataset;
 23\ encoder lr scheduler and decoder lr scheduler need to be test which one is effective on hyperparameter subset.
+
+
+24\ Dropout temporally is zero.
+
+25\ Gradient Clip should confirm.
+
+26\ Sampler need to adjust.
+
+27\ If not Atten_softmax_Kaiming, the initialization of affine_h in Atten should be xavier_normal.
+
+
+
