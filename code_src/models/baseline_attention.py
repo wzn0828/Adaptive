@@ -9,7 +9,7 @@ from code_src.models import model_utils
 # ========================================spatial attention========================================#
 # Encoder, doing this for extracting cnn features.
 class AttentiveCNN(nn.Module):
-    def __init__(self, embed_size, hidden_size):
+    def __init__(self, embed_size, hidden_size, cf):
         super(AttentiveCNN, self).__init__()
 
         # ResNet-152 backend
@@ -27,8 +27,11 @@ class AttentiveCNN(nn.Module):
 
         # initialization
         model_utils.kaiming_uniform('relu', 0, self.affine_a, self.affine_b)
-        # model_utils.kaiming_normal('relu', 0, self.affine_a, self.affine_b)
 
+        # To generate h0 & c0 in LSTM-Decoder
+        self.affine_h0 = nn.Linear(2048, hidden_size)
+        self.affine_c0 = nn.Linear(2048, hidden_size)
+        model_utils.xavier_uniform('tanh', self.affine_h0, self.affine_c0)
 
     def forward(self, images):
         '''
@@ -49,7 +52,14 @@ class AttentiveCNN(nn.Module):
 
         v_g = F.relu(self.affine_b(self.dropout(a_g)))      # size of [cf.train_batch_size, cf.lstm_embed_size]
 
-        return V, v_g
+        # states=(h0,c0)
+        h0 = F.tanh(self.affine_h0(self.dropout(a_g)))
+        h0 = h0.unsqueeze(0)                                # size of [1, cf.train_batch_size, cf.lstm_hidden_size]
+        c0 = F.tanh(self.affine_c0(self.dropout(a_g)))
+        c0 = c0.unsqueeze(0)                                # size of [1, cf.train_batch_size, cf.lstm_hidden_size]
+        states = (h0, c0)
+
+        return V, v_g, states
 
 
 # Attention Block for C_hat calculation
@@ -63,7 +73,7 @@ class Atten(nn.Module):
         self.dropout = nn.Dropout(0)
         # initialization
         model_utils.xavier_normal('tanh', self.affine_v, self.affine_g)
-        model_utils.xavier_normal('linear', self.affine_h)
+        model_utils.kaiming_normal('relu', 0, self.affine_h)
 
     def forward(self, V, h_t):
         '''
@@ -101,8 +111,7 @@ class AdaptiveBlock(nn.Module):
         self.dropout = nn.Dropout(0)
 
         # initialization
-        model_utils.xavier_normal('linear', self.mlp)
-
+        model_utils.kaiming_normal('relu', 0, self.mlp)
 
     def forward(self, x, hiddens, cells, V):
         # x's size is [cf.train_batch_size, maxlength(captions), 2*cf.lstm_embed_size]
@@ -134,8 +143,8 @@ class Decoder(nn.Module):
         # Adaptive Attention Block: Sentinel + C_hat + Final scores for caption sampling
         self.adaptive = AdaptiveBlock(hidden_size, vocab_size)
 
-        # # initialize the lstm
-        # model_utils.lstm_init(self.LSTM)
+        # initialize the lstm
+        model_utils.lstm_init(self.LSTM)
 
     def forward(self, V, v_g, captions, states=None):
 
@@ -192,7 +201,7 @@ class Encoder2Decoder(nn.Module):
         super(Encoder2Decoder, self).__init__()
 
         # Image CNN encoder and Adaptive Attention Decoder
-        self.encoder = AttentiveCNN(cf.base_word_embed_size, cf.base_lstm_hidden_size)
+        self.encoder = AttentiveCNN(cf.base_word_embed_size, cf.base_lstm_hidden_size, cf)
         self.decoder = Decoder(cf.base_word_embed_size, cf.vocab_length, cf.base_lstm_hidden_size)
 
     def forward(self, images, captions, lengths):
@@ -207,12 +216,12 @@ class Encoder2Decoder(nn.Module):
         if torch.cuda.device_count() > 1:
             device_ids = range(torch.cuda.device_count())
             encoder_parallel = torch.nn.DataParallel(self.encoder, device_ids=device_ids)
-            V, v_g = encoder_parallel(images)
+            V, v_g, states = encoder_parallel(images)
         else:
-            V, v_g = self.encoder(images)   # size of V is [cf.train_batch_size, 49, 512], v_g's is [cf.train_batch_size, 256]
+            V, v_g, states = self.encoder(images)   # size of V is [cf.train_batch_size, 49, 512], v_g's is [cf.train_batch_size, 256]
 
         # Language Modeling on word prediction
-        decoder_outputs = self.decoder(V, v_g, captions)    # size of scores is [cf.train_batch_size, 18, 10141(vocab_size)]
+        decoder_outputs = self.decoder(V, v_g, captions, states)    # size of scores is [cf.train_batch_size, 18, 10141(vocab_size)]
 
         # Pack it to make criterion calculation more efficient
         packed_scores = pack_padded_sequence(decoder_outputs[0], lengths, batch_first=True) # size of packed_scores.data is [sum(lengths), 10141]
@@ -233,9 +242,9 @@ class Encoder2Decoder(nn.Module):
         if torch.cuda.device_count() > 1:
             device_ids = range(torch.cuda.device_count())
             encoder_parallel = torch.nn.DataParallel(self.encoder, device_ids=device_ids)
-            V, v_g = encoder_parallel(images)
+            V, v_g, states = encoder_parallel(images)
         else:
-            V, v_g = self.encoder(images)   # size of V is [cf.eval_batch_size, 49, cf.lstm_hidden_size]
+            V, v_g, states = self.encoder(images)   # size of V is [cf.eval_batch_size, 49, cf.lstm_hidden_size]
                                             # size of v_g is [cf.eval_batch_size, cf.lstm_embed_size]
 
         # Build the starting token Variable <start> (index 1): B x 1
@@ -247,9 +256,6 @@ class Encoder2Decoder(nn.Module):
         # Get generated caption idx list, attention weights and sentinel score
         sampled_ids = []
         attention = []
-
-        # Initial hidden states
-        states = None
 
         for i in range(max_len):
             scores, atten_weights, states = self.decoder(V, v_g, captions, states)    # size of scores is [cf.eval_batch_size, 1(maxlength(captions)), 10141(vocab_size)]
