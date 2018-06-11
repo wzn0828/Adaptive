@@ -54,9 +54,9 @@ def main_train(cf):
     # Constructing optimizer and scheduler for encoder and decoder
     encoder_optimizer, encoder_lbfgs_flag = get_encoder_optimizer(cf, model)
     decoder_optimizer = get_decoder_optimizer(cf, model)
-    decoder_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(decoder_optimizer, factor=0.2, patience=cf.opt_lrdecay_patience,
+    decoder_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(decoder_optimizer, factor=cf.opt_lrdecay_factor, patience=cf.opt_lrdecay_patience,
                                                                    threshold=0.02, threshold_mode='abs', min_lr=1e-6)
-    encoder_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(encoder_optimizer, factor=0.2, patience=cf.opt_lrdecay_patience,
+    encoder_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(encoder_optimizer, factor=cf.opt_lrdecay_factor, patience=cf.opt_lrdecay_patience,
                                                                    threshold=0.02, threshold_mode='abs', min_lr=1e-7)
 
     # Language Modeling Loss
@@ -133,9 +133,9 @@ def main_train(cf):
                             writer.add_histogram('Grads_' + name.replace('.', '/'), param.grad, global_n_iter)
                 writer.add_scalar('loss-performance/train loss per batches', loss_data, global_n_iter)
 
-            # tensorboard: scalars of lstm norm
-            if cf.train_tb_lstm_clip_grad:
-                writer.add_scalar('decoder_norm/decoder_lstm_norm', total_norm, global_n_iter)
+                # tensorboard: scalars of lstm norm
+                if cf.train_tb_lstm_clip_grad:
+                    writer.add_scalar('decoder_norm/decoder_lstm_norm', total_norm, global_n_iter)
 
             global_n_iter += 1
 
