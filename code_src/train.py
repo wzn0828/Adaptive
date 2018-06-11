@@ -147,6 +147,7 @@ def main_train(cf):
         print('Train epoch losses:')
         print(train_epoch_losses)
 
+        cider = 0
         if cf.train_evalOrnot:
             # Evaluation on train_eval set
             cider_train_eval = coco_eval(cf, model=model, epoch=epoch, train_mode=True)
@@ -172,9 +173,9 @@ def main_train(cf):
             if whether_early_stop:
                 break
 
-            # Save the Adaptive Attention model after each epoch
-            torch.save(model.state_dict(),
-                       os.path.join(cf.trained_model_path, 'cider-%.4f_model-%d.pkl' % (cider, epoch)))
+        # Save the Adaptive Attention model after each epoch
+        torch.save(model.state_dict(),
+                    os.path.join(cf.trained_model_path, 'cider-%.4f_model-%d.pkl' % (cider, epoch)))
     writer.close()
 
     print('Model of best epoch #: %d with CIDEr score %.2f' % (best_epoch, best_cider))
