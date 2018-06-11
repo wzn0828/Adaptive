@@ -4,12 +4,13 @@ from torch.autograd import Variable
 import torch.nn.functional as F
 from torch.nn import init
 from code_src.models import baseline_attention
+from code_src.models import model_utils
 
 # ========================================Knowing When to Look========================================
 
 # Attention Block for C_hat calculation
 class Atten(nn.Module):
-    def __init__(self, hidden_size):
+    def __init__(self, hidden_size, cf):
         super(Atten, self).__init__()
 
         self.affine_v = nn.Linear(hidden_size, 49, bias=False)  # W_v
@@ -18,14 +19,9 @@ class Atten(nn.Module):
         self.affine_h = nn.Linear(49, 1, bias=False)  # w_h
 
         self.dropout = nn.Dropout(0)
-        self.init_weights()
-
-    def init_weights(self):
-        """Initialize the weights."""
-        init.xavier_uniform(self.affine_v.weight)
-        init.xavier_uniform(self.affine_g.weight)
-        init.xavier_uniform(self.affine_h.weight)
-        init.xavier_uniform(self.affine_s.weight)
+        # initialization
+        model_utils.xavier_uniform('tanh', self.affine_v, self.affine_g, self.affine_s)
+        model_utils.kaiming_normal('relu', 0, self.affine_h)
 
     def forward(self, V, h_t, s_t):
         '''
@@ -73,11 +69,8 @@ class Sentinel(nn.Module):
         # Dropout applied before affine transformation
         self.dropout = nn.Dropout(0)
 
-        self.init_weights()
-
-    def init_weights(self):
-        init.xavier_uniform(self.affine_x.weight)
-        init.xavier_uniform(self.affine_h.weight)
+        # initialization
+        model_utils.xavier_uniform('sigmoid', self.affine_x, self.affine_h)
 
     def forward(self, x_t, h_t_1, cell_t):
         # size of x_t, h_t_1, cell_t is [cf.train_batch_size, maxlength(captions), cf.lstm_hidden_size]
@@ -94,14 +87,14 @@ class Sentinel(nn.Module):
 
 # Adaptive Attention Block: C_t, Spatial Attention Weights, Sentinel embedding
 class AdaptiveBlock(nn.Module):
-    def __init__(self, embed_size, hidden_size, vocab_size):
+    def __init__(self, embed_size, hidden_size, vocab_size, cf):
         super(AdaptiveBlock, self).__init__()
 
         # Sentinel block
         self.sentinel = Sentinel(embed_size * 2, hidden_size)
 
         # Image Spatial Attention Block
-        self.atten = Atten(hidden_size)
+        self.atten = Atten(hidden_size, cf)
 
         # Final Caption generator
         self.mlp = nn.Linear(hidden_size, vocab_size)
@@ -110,14 +103,9 @@ class AdaptiveBlock(nn.Module):
         self.dropout = nn.Dropout(0)
 
         self.hidden_size = hidden_size
-        self.init_weights()
 
-    def init_weights(self):
-        '''
-        Initialize final classifier weights
-        '''
-        init.kaiming_normal(self.mlp.weight, mode='fan_in')
-        self.mlp.bias.data.fill_(0)
+        # Initialization
+        model_utils.kaiming_normal('relu', 0, self.mlp)
 
     def forward(self, x, hiddens, cells, V):
         # x's size is [cf.train_batch_size, maxlength(captions), 2*cf.lstm_embed_size]
@@ -161,10 +149,10 @@ class AdaptiveBlock(nn.Module):
 
 # Caption Decoder
 class Decoder(baseline_attention.Decoder):
-    def __init__(self, embed_size, vocab_size, hidden_size):
+    def __init__(self, embed_size, vocab_size, hidden_size, cf):
         super(Decoder, self).__init__(embed_size, vocab_size, hidden_size)
         # Adaptive Attention Block: Sentinel + C_hat + Final scores for caption sampling
-        self.adaptive = AdaptiveBlock(embed_size, hidden_size, vocab_size)
+        self.adaptive = AdaptiveBlock(embed_size, hidden_size, vocab_size, cf)
 
 
 # Whole Architecture with Image Encoder and Caption decoder        
@@ -173,8 +161,8 @@ class Encoder2Decoder(baseline_attention.Encoder2Decoder):
         nn.Module.__init__(self)
 
         # Image CNN encoder and Adaptive Attention Decoder
-        self.encoder = baseline_attention.AttentiveCNN(cf.adaptive_word_embed_size, cf.adaptive_lstm_hidden_size)
-        self.decoder = Decoder(cf.adaptive_word_embed_size, cf.vocab_length, cf.adaptive_lstm_hidden_size)
+        self.encoder = baseline_attention.AttentiveCNN(cf.adaptive_word_embed_size, cf.adaptive_lstm_hidden_size, cf)
+        self.decoder = Decoder(cf.adaptive_word_embed_size, cf.vocab_length, cf.adaptive_lstm_hidden_size, cf)
 
     # Caption generator
     def sampler(self, images, max_len=30):
@@ -190,9 +178,9 @@ class Encoder2Decoder(baseline_attention.Encoder2Decoder):
         if torch.cuda.device_count() > 1:
             device_ids = range(torch.cuda.device_count())
             encoder_parallel = torch.nn.DataParallel(self.encoder, device_ids=device_ids)
-            V, v_g = encoder_parallel(images)
+            V, v_g, states = encoder_parallel(images)
         else:
-            V, v_g = self.encoder(images)   # size of V is [cf.eval_batch_size, 49, cf.lstm_hidden_size]
+            V, v_g, states = self.encoder(images)   # size of V is [cf.eval_batch_size, 49, cf.lstm_hidden_size]
                                             # size of v_g is [cf.eval_batch_size, cf.lstm_embed_size]
 
         # Build the starting token Variable <start> (index 1): B x 1
@@ -205,9 +193,6 @@ class Encoder2Decoder(baseline_attention.Encoder2Decoder):
         sampled_ids = []
         attention = []
         Beta = []
-
-        # Initial hidden states
-        states = None
 
         for i in range(max_len):
             scores, atten_weights, beta, states = self.decoder(V, v_g, captions, states)    # size of scores is [cf.eval_batch_size, 1(maxlength(captions)), 10141(vocab_size)]
