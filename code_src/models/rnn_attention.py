@@ -24,8 +24,8 @@ class Atten(nn.Module):
         self.lstm = nn.LSTM(hidden_size, self.rnn_attention_hiddensize, cf.rnn_attention_numlayers, batch_first=True, bidirectional=cf.rnn_attention_bidirectional)
 
         # initialization
-        model_utils.xavier_normal('tanh', self.affine_v, self.affine_g)
-        model_utils.xavier_normal('sigmoid', self.affine_h)
+        model_utils.xavier_uniform('tanh', self.affine_v, self.affine_g)
+        model_utils.xavier_uniform('sigmoid', self.affine_h)
         model_utils.lstm_init(self.lstm)
 
     def forward(self, V, h_t):
