@@ -5,5 +5,6 @@
 5\ The baseline output is the best among Baseline, output_affine_add, output_y_t_1, which is the one used in 'Knowing when to look'.
 6\ In Atten, the affine_h initialization should use kaiming_normal('relu'). And to do a summary of this and the Decoder mlp output, which is
     also connected with a softmax, we can seemly do a suppose: The softmax should be initialized by kaiming_normal.
-
+7\ The initial decoder learning rate for Adam optimizer is 1e-3, and the one of encoder is 1e-5.
+8\ Batch size = 24, which is the fastest, and the reducing loss velocity is bigger than B32, the loss stability is better than B8 and B16.
 

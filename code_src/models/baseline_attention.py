@@ -118,7 +118,6 @@ class AdaptiveBlock(nn.Module):
         # hiddens' size is [cf.train_batch_size, maxlength(captions), cf.lstm_hidden_size]
         # cells' size is [cf.train_batch_size, maxlength(captions), cf.lstm_hidden_size]
 
-
         # Get C_t, Spatial attention, sentinel score
         c_hat, atten_weights = self.atten(V, hiddens)   # size of c_hat is [cf.train_batch_size, maxlength(captions), cf.lstm_hidden_size]
                                                                         # size of atten_weights [cf.train_batch_size, maxlength(captions), 49]
