@@ -1,2 +1,9 @@
 1\ In AttentiveCNN class of baseline_attention, the affine_a-b initialization methods: Kaiming_uniform_ is a little better than kaiming_normal_;
-2\
+2\ Lstm initialization methods: unified orthogonal is better than separated orthogonal which is better than the deault lstm initialization.
+3\ In the output softmax mlp initialization, kaiming_normal is better than xavier_normal which is better than xavier_uniform.
+4\ The init_h0_c0 should be a mlp from the image feature, which has a little advantage. But, through its Gradient and weight tensorboard, it seems they did not learn anything.
+5\ The baseline output is the best among Baseline, output_affine_add, output_y_t_1, which is the one used in 'Knowing when to look'.
+6\ In Atten, the affine_h initialization should use kaiming_normal('relu'). And to do a summary of this and the Decoder mlp output, which is
+    also connected with a softmax, we can seemly do a suppose: The softmax should be initialized by kaiming_normal.
+
+
