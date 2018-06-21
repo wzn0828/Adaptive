@@ -247,6 +247,7 @@ class Encoder2Decoder(nn.Module):
             V, v_g, states = self.encoder(images)   # size of V is [cf.eval_batch_size, 49, cf.lstm_hidden_size]
                                             # size of v_g is [cf.eval_batch_size, cf.lstm_embed_size]
 
+        states.transpose_(0, 1)
         # Build the starting token Variable <start> (index 1): B x 1
         if torch.cuda.is_available():
             captions = Variable(torch.LongTensor(images.size(0), 1).fill_(1).cuda())
