@@ -1,12 +1,12 @@
 #--------------------path--------------------#
 experiment_path             = 'Experiments'
 vocab_path                  = 'code_src/data/vocab.pkl'   # path for vocabulary wrapper
-image_dir                   = '/home/wzn/D/Datasets/ImageCaption/MSCOCO'
+image_dir                   = '/media/samsumg_1tb/Image_Caption/Datasets/MSCOCO'
 resized_image_dir           = image_dir + '/resized'   # directory for resized training images
 captions_val_origin         = image_dir + '/annotations/annotations_trainval2014/captions_val2014.json'
 captions_train_origin       = image_dir + '/annotations/annotations_trainval2014/captions_train2014.json'
 splited_anno_path_prefix    = 'code_src/data/annotations/karpathy_split_'
-train_anno_path             = 'code_src/data/annotations/karpathy_split_train.json'  # path for train annotation json file
+train_anno_path             = 'code_src/data/annotations/karpathy_split_train_hyperparameter.json'  # path for train annotation json file
 val_anno_path               = 'code_src/data/annotations/karpathy_split_val_hyperparameter.json'    # path for validation annotation json file
 test_anno_path              = 'code_src/data/annotations/karpathy_split_test.json'   # path for test annotation json file
 train_eval_anno_path        = 'code_src/data/annotations/karpathy_split_train_eval_hyperparameter.json'
@@ -21,7 +21,7 @@ train_log_step              = 10                                                
 train_random_seed           = 123                                                # random seed for model reproduction
 train_pretrained            = False         # use train_pretrained_model or not
 train_pretrained_model      = 'Experiments/Train_adaptive_adam_adam_cnn_start_layer_5_cnn_start_epoch_5___2018-05-24-17-14-31/trained_models/attention_model-75.pkl'      # [''|'path'] path of used model'] start from checkpoint or scratch, '' represents start from scratch
-train_num_epochs            = 60                                        # the maximum epochs
+train_num_epochs            = 30                                        # the maximum epochs
 train_batch_size            = 24                                        # on cluster setup, 60 each x 4 for Huckle server
 # train_lr_decay              = 40                                        # epoch at which to start lr decay
 # train_lr_decay_every        = 50                                        # decay learning rate half at every this number

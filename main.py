@@ -9,7 +9,7 @@ from code_src.data.build_vocab import main_build_vocab
 from code_src.data.KarpathySplit import main_KarpathySplit
 from code_src.tools.utils import coco_eval
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+os.environ['CUDA_VISIBLE_DEVICES'] = '2,3'
 
 
 def process(cf):
@@ -28,6 +28,7 @@ def process(cf):
 
     if cf.trainOrnot:
         print('>---------start train---------<')
+        cf.tensorboard = '_2GPU'
         main_train(cf)
 
     if cf.validOrnot:
