@@ -219,7 +219,8 @@ class Encoder2Decoder(nn.Module):
         else:
             V, v_g, states = self.encoder(images)   # size of V is [cf.train_batch_size, 49, 512], v_g's is [cf.train_batch_size, 256]
 
-        states.transpose_(0, 1)
+        states[0].transpose_(0, 1)
+        states[1].transpose_(0, 1)
         # Language Modeling on word prediction
         decoder_outputs = self.decoder(V, v_g, captions, states)    # size of scores is [cf.train_batch_size, 18, 10141(vocab_size)]
 
@@ -247,7 +248,8 @@ class Encoder2Decoder(nn.Module):
             V, v_g, states = self.encoder(images)   # size of V is [cf.eval_batch_size, 49, cf.lstm_hidden_size]
                                             # size of v_g is [cf.eval_batch_size, cf.lstm_embed_size]
 
-        states.transpose_(0, 1)
+        states[0].transpose_(0, 1)
+        states[1].transpose_(0, 1)
         # Build the starting token Variable <start> (index 1): B x 1
         if torch.cuda.is_available():
             captions = Variable(torch.LongTensor(images.size(0), 1).fill_(1).cuda())
