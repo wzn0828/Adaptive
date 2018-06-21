@@ -54,9 +54,9 @@ class AttentiveCNN(nn.Module):
 
         # states=(h0,c0)
         h0 = F.tanh(self.affine_h0(self.dropout(a_g)))
-        h0 = h0.unsqueeze(0)                                # size of [1, cf.train_batch_size, cf.lstm_hidden_size]
+        h0 = h0.unsqueeze(1)                                # size of [cf.train_batch_size, 1, cf.lstm_hidden_size]
         c0 = F.tanh(self.affine_c0(self.dropout(a_g)))
-        c0 = c0.unsqueeze(0)                                # size of [1, cf.train_batch_size, cf.lstm_hidden_size]
+        c0 = c0.unsqueeze(1)                                # size of [cf.train_batch_size, 1, cf.lstm_hidden_size]
         states = (h0, c0)
 
         return V, v_g, states
@@ -219,6 +219,7 @@ class Encoder2Decoder(nn.Module):
         else:
             V, v_g, states = self.encoder(images)   # size of V is [cf.train_batch_size, 49, 512], v_g's is [cf.train_batch_size, 256]
 
+        states.transpose_(0, 1)
         # Language Modeling on word prediction
         decoder_outputs = self.decoder(V, v_g, captions, states)    # size of scores is [cf.train_batch_size, 18, 10141(vocab_size)]
 
