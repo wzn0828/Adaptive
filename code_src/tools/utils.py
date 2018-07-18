@@ -256,6 +256,8 @@ def get_testOrValid_model(cf, test_mode, valid_mode):
         adaptive = atten_models.adaptive_attention.Encoder2Decoder(cf.lstm_embed_size, cf.vocab_length, cf.lstm_hidden_size)
     elif cf.atten_model_name == 'rnn_attention':
         adaptive = atten_models.rnn_attention.Encoder2Decoder(cf)
+    elif cf.atten_model_name == 'baseline_attention':
+        adaptive = atten_models.baseline_attention.Encoder2Decoder(cf)
 
     # load pretrained model
     if test_mode:
