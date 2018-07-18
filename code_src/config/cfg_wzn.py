@@ -1,21 +1,21 @@
 #--------------------path--------------------#
 experiment_path             = 'Experiments'
 vocab_path                  = 'code_src/data/vocab.pkl'   # path for vocabulary wrapper
-image_dir                   = '/media/samsumg_1tb/Image_Caption/Datasets/MSCOCO'
+image_dir                   = '/home/wzn/D/Datasets/ImageCaption/MSCOCO'
 resized_image_dir           = image_dir + '/resized'   # directory for resized training images
 captions_val_origin         = image_dir + '/annotations/annotations_trainval2014/captions_val2014.json'
 captions_train_origin       = image_dir + '/annotations/annotations_trainval2014/captions_train2014.json'
 splited_anno_path_prefix    = 'code_src/data/annotations/karpathy_split_'
-train_anno_path             = 'code_src/data/annotations/karpathy_split_train_hyperparameter.json'  # path for train annotation json file
-val_anno_path               = 'code_src/data/annotations/karpathy_split_val_hyperparameter.json'    # path for validation annotation json file
+train_anno_path             = 'code_src/data/annotations/karpathy_split_train.json'  # path for train annotation json file
+val_anno_path               = 'code_src/data/annotations/karpathy_split_val.json'    # path for validation annotation json file
 test_anno_path              = 'code_src/data/annotations/karpathy_split_test.json'   # path for test annotation json file
-train_eval_anno_path        = 'code_src/data/annotations/karpathy_split_train_eval_hyperparameter.json'
+train_eval_anno_path        = 'code_src/data/annotations/karpathy_split_train_eval.json'
 
 #--------------------attention_model--------------------#
 atten_model_name            = 'baseline_attention'    # ['baseline_attention', 'adaptive_attention', 'rnn_attention']
 
 #--------------------train--------------------#
-trainOrnot                  = True
+trainOrnot                  = False
 train_crop_size             = 224        # size for randomly cropping images
 train_log_step              = 10                                                 # step size for printing log info
 train_random_seed           = 123                                                # random seed for model reproduction
@@ -81,7 +81,7 @@ test_pretrained_model       = 'Experiments/Train_rnn_attention_lr_5e-06_cnnlr_1e
 
 #--------------------hyper parameters--------------------#
 # For eval_size > 30, it will cause cuda OOM error on Huckleberry
-eval_batch_size             = 20
+eval_batch_size             = 400
 # on cluster setup, 30 each x 4
 dataloader_num_workers      = 8
 
@@ -122,5 +122,5 @@ rnn_attention_hiddensize    = base_lstm_hidden_size
 rnn_attention_numlayers     = 1
 
 #--------------------valid-------------------#
-validOrnot                   = False
-valid_pretrained_model       = 'Experiments/Train_rnn_attention_lr_5e-05_cnnlr_1e-05_cnn_start_layer_5_cnn_start_epoch_20___2018-04-19-10-51-43/trained_models/adaptive-1.pkl'      # used pretrained model parameters in test
+validOrnot                   = True
+valid_pretrained_model       = 'Experiments/Train_baseline_attention___2018-06-11-21-02-12/trained_models/cider-0.0000_model-35.pkl'      # used pretrained model parameters in test
